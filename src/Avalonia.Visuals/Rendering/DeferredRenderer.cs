@@ -91,7 +91,7 @@ namespace Avalonia.Rendering
         /// <summary>
         /// Gets or sets a path to which rendered frame should be rendered for debugging.
         /// </summary>
-        public string DebugFramesPath { get; set; }
+        public string DebugFramesPath { get; set; } //= @"C:\Repositories\Avalonia\frame-dump";
 
         /// <summary>
         /// Gets the render layers.
@@ -462,7 +462,7 @@ namespace Avalonia.Rendering
         {
             var index = 0;
 
-            foreach (var layer in Layers)
+            foreach (var layer in  Layers)
             {
                 var fileName = Path.Combine(DebugFramesPath, $"frame-{id}-layer-{index++}.png");
                 layer.Bitmap.Item.Save(fileName);

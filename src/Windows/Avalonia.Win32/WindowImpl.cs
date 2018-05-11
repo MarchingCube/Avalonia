@@ -696,7 +696,6 @@ namespace Avalonia.Win32
             UnmanagedMethods.WNDCLASSEX wndClassEx = new UnmanagedMethods.WNDCLASSEX
             {
                 cbSize = Marshal.SizeOf<UnmanagedMethods.WNDCLASSEX>(),
-                style = 0,
                 lpfnWndProc = _wndProcDelegate,
                 hInstance = UnmanagedMethods.GetModuleHandle(null),
                 hCursor = DefaultCursor,
