@@ -47,5 +47,12 @@ namespace Avalonia.Skia.Gpu
         /// Present rendering results to framebuffer.
         /// </summary>
         void Present();
+
+        /// <summary>
+        /// Get size of window framebuffer.
+        /// </summary>
+        /// <param name="platformHandle">Platform handle.</param>
+        /// <returns>Size of a framebuffer</returns>
+        Size GetFramebufferSize(IPlatformHandle platformHandle);
     }
 }

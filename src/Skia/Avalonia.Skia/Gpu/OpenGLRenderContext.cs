@@ -88,6 +88,14 @@ namespace Avalonia.Skia.Gpu
             _context.SwapBuffers();
         }
 
+        /// <inheritdoc />
+        public Size GetFramebufferSize(IPlatformHandle platformHandle)
+        {
+            var size = _context.GetFramebufferSize(platformHandle);
+
+            return new Size(size.width, size.height);
+        }
+
         /// <summary>
         /// Create Skia rendering context using OpenGL interface.
         /// </summary>

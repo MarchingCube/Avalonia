@@ -9,6 +9,7 @@ using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Utilities;
+using Avalonia.Skia.Geometry;
 using Avalonia.Skia.Gpu;
 using Avalonia.Utilities;
 using SkiaSharp;

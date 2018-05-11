@@ -13,7 +13,9 @@ namespace Avalonia.Skia.Gpu
     public class OpenGLRenderBackend : IGpuRenderBackend
     {
         private readonly IOpenGLPlatform _openGLPlatform;
-        private readonly IWindowImpl _globalWindow;
+        private IWindowImpl _resourceWindow;
+        private IGpuRenderContext _resourceRenderContext;
+        private IWindowingPlatform _windowingPlatform;
 
         /// <summary>
         /// Create new OpenGL render backend using provided platform.
@@ -22,22 +24,30 @@ namespace Avalonia.Skia.Gpu
         /// <param name="windowingPlatform">Windowing platform to use.</param>
         public OpenGLRenderBackend(IOpenGLPlatform openGLPlatform, IWindowingPlatform windowingPlatform)
         {
-            if (windowingPlatform == null) throw new ArgumentNullException(nameof(windowingPlatform));
+            _windowingPlatform = windowingPlatform ?? throw new ArgumentNullException(nameof(windowingPlatform));
             _openGLPlatform = openGLPlatform ?? throw new ArgumentNullException(nameof(openGLPlatform));
-            
-            // Need to create dummy hidden window for global resource context.
-            _globalWindow = windowingPlatform.CreateWindow();
+        }
 
-            ResourceRenderContext = CreateRenderContext(_globalWindow.Handle);
-
-            if (ResourceRenderContext == null)
+        /// <inheritdoc />
+        public IGpuRenderContext ResourceRenderContext
+        {
+            get
             {
-                throw new InvalidOperationException("Failed to create global OpenGL resource context.");
+                if (_resourceRenderContext == null)
+                {
+                    _resourceWindow = _windowingPlatform.CreateWindow();
+
+                    if (_resourceWindow == null)
+                    {
+                        return null;
+                    }
+
+                    _resourceRenderContext = new OpenGLRenderContext(_resourceWindow.Handle, _openGLPlatform);
+                }
+
+                return _resourceRenderContext;
             }
         }
-        
-        /// <inheritdoc />
-        public IGpuRenderContext ResourceRenderContext { get; }
         
         /// <inheritdoc />
         public IGpuRenderContext CreateRenderContext(IPlatformHandle platformHandle)

@@ -4,6 +4,7 @@
 using System;
 using System.Linq;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Skia.Gpu;
@@ -17,7 +18,6 @@ namespace Avalonia.Skia.Media
     /// </summary>
     public class WindowRenderTarget : IRenderTarget
     {
-        private readonly TopLevel _topLevel;
         private readonly IGpuRenderContext _renderContext;
         private readonly IDisposable _postRenderHandler;
         private GRBackendRenderTargetDesc _rtDesc;
@@ -32,14 +32,6 @@ namespace Avalonia.Skia.Media
         {
             if (platformHandle == null) throw new ArgumentNullException(nameof(platformHandle));
             if (renderBackend == null) throw new ArgumentNullException(nameof(renderBackend));
-
-            // Kinda dirty, but I am unaware of better way of cross-plat window size tracking.
-            _topLevel = Window.OpenWindows.FirstOrDefault(w => w.PlatformImpl?.Handle == platformHandle);
-
-            if (_topLevel == null)
-            {
-                throw new InvalidOperationException("Failed to find TopLevel window for given platform handle");
-            }
             
             _renderContext = renderBackend.CreateRenderContext(platformHandle);
 
@@ -95,7 +87,7 @@ namespace Avalonia.Skia.Media
         /// </summary>
         private void CreateSurface()
         {
-            var newSize = _topLevel.ClientSize;
+            var newSize = _renderContext.GetFramebufferSize(_renderContext.PlatformHandle);
             var newWidth = (int)newSize.Width;
             var newHeight = (int)newSize.Height;
 

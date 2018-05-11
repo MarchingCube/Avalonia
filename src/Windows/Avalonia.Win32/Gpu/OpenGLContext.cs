@@ -2,7 +2,9 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using Avalonia.Platform;
 using Avalonia.Platform.Gpu;
+using Avalonia.Win32.Interop;
 using OpenTK.Graphics;
 using OpenTK.Platform;
 
@@ -24,7 +26,7 @@ namespace Avalonia.Win32.Gpu
         {
             _windowInfo = windowInfo ?? throw new ArgumentNullException(nameof(windowInfo));
 
-            _graphicsContext = new GraphicsContext(GraphicsMode.Default, _windowInfo, 4, 0, GraphicsContextFlags.Default);
+            _graphicsContext = new GraphicsContext(GraphicsMode.Default, _windowInfo, 4, 6, GraphicsContextFlags.Default);
             _graphicsContext.LoadAll();
         }
 
@@ -51,6 +53,19 @@ namespace Avalonia.Win32.Gpu
         public void SwapBuffers()
         {
             _graphicsContext.SwapBuffers();
+        }
+
+        /// <inheritdoc />
+        public (int width, int height) GetFramebufferSize(IPlatformHandle platformHandle)
+        {
+            if (platformHandle == null)
+            {
+                return (0, 0);
+            }
+
+            UnmanagedMethods.GetClientRect(platformHandle.Handle, out UnmanagedMethods.RECT clientSize);
+
+            return (clientSize.right - clientSize.left, clientSize.bottom - clientSize.top);
         }
     }
 }

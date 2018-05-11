@@ -24,5 +24,12 @@ namespace Avalonia.Platform.Gpu
         /// Swap buffers of backing window.
         /// </summary>
         void SwapBuffers();
+
+        /// <summary>
+        /// Get framebuffer size.
+        /// </summary>
+        /// <param name="platformHandle">Platform handle.</param>
+        /// <returns>Size of a framebuffer.</returns>
+        (int width, int height) GetFramebufferSize(IPlatformHandle platformHandle);
     }
 }
