@@ -13,9 +13,6 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="OpenTK.NETCore" Version="1.1.2749.6433" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\..\Avalonia.Base\Avalonia.Base.csproj" />
     <ProjectReference Include="..\..\Avalonia.Controls\Avalonia.Controls.csproj" />
     <ProjectReference Include="..\..\Avalonia.Input\Avalonia.Input.csproj" />
@@ -25,5 +22,6 @@
     <ProjectReference Include="..\..\Avalonia.Visuals\Avalonia.Visuals.csproj" />
   </ItemGroup>
   <Import Project="..\..\..\build\SkiaSharp.props" />
+  <Import Project="..\..\..\build\OpenTK.props" />
   <Import Project="..\..\Shared\RenderHelpers\RenderHelpers.projitems" Label="Shared" />
 </Project>
