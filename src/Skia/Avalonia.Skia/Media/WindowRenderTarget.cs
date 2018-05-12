@@ -2,9 +2,6 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Linq;
-using Avalonia.Controls;
-using Avalonia.Controls.Primitives;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Skia.Gpu;
@@ -22,6 +19,7 @@ namespace Avalonia.Skia.Media
         private readonly IDisposable _postRenderHandler;
         private GRBackendRenderTargetDesc _rtDesc;
         private SKSurface _surface;
+        private SKCanvas _canvas;
         
         /// <summary>
         /// Create new window render target that will render to given handle using passed render backend.
@@ -69,6 +67,9 @@ namespace Avalonia.Skia.Media
         /// <inheritdoc />
         public void Dispose()
         {
+            _renderContext.PrepareForRendering();
+
+            _canvas?.Dispose();
             _surface?.Dispose();
             _renderContext.Dispose();
         }
@@ -93,6 +94,7 @@ namespace Avalonia.Skia.Media
 
             if (_surface == null || newWidth != _rtDesc.Width || newHeight != _rtDesc.Height)
             {
+                _canvas?.Dispose();
                 _surface?.Dispose();
 
                 _rtDesc.Width = newWidth;
@@ -102,7 +104,9 @@ namespace Avalonia.Skia.Media
 
                 _surface = SKSurface.Create(_renderContext.Context, _rtDesc);
 
-                if (_surface == null)
+                _canvas = _surface?.Canvas;
+
+                if (_surface == null || _canvas == null)
                 {
                     throw new InvalidOperationException("Failed to create Skia surface for window render target");
                 }
@@ -115,15 +119,13 @@ namespace Avalonia.Skia.Media
             CreateSurface();
 
             _renderContext.PrepareForRendering();
-
-            var canvas = _surface.Canvas;
-
-            canvas.RestoreToCount(-1);
-            canvas.ResetMatrix();
+            
+            _canvas.RestoreToCount(-1);
+            _canvas.ResetMatrix();
 
             var createInfo = new DrawingContextImpl.CreateInfo
             {
-                Canvas = canvas,
+                Canvas = _canvas,
                 Dpi = SkiaPlatform.DefaultDpi,
                 VisualBrushRenderer = visualBrushRenderer,
                 RenderContext = _renderContext

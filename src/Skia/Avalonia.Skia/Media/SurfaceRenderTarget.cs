@@ -20,6 +20,7 @@ namespace Avalonia.Skia
         private readonly Vector _dpi;
         private readonly IGpuRenderContext _renderContext;
         private readonly SKSurface _surface;
+        private readonly SKCanvas _canvas;
         private readonly bool _disableLcdRendering;
         
         /// <summary>
@@ -36,7 +37,9 @@ namespace Avalonia.Skia
 
             _surface = CreateSurface(PixelWidth, PixelHeight, createInfo.Format, _renderContext);
 
-            if (_surface == null)
+            _canvas = _surface?.Canvas;
+
+            if (_surface == null || _canvas == null)
             {
                 throw new InvalidOperationException("Failed to create Skia render target surface");
             }
@@ -62,22 +65,21 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public void Dispose()
         {
+            _canvas.Dispose();
             _surface.Dispose();
         }
 
         /// <inheritdoc />
         public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
         {
-            var canvas = _surface.Canvas;
-
-            canvas.RestoreToCount(-1);
-            canvas.ResetMatrix();
+            _canvas.RestoreToCount(-1);
+            _canvas.ResetMatrix();
 
             _renderContext?.PrepareForRendering();
 
             var createInfo = new DrawingContextImpl.CreateInfo
             {
-                Canvas = canvas,
+                Canvas = _canvas,
                 Dpi = _dpi,
                 VisualBrushRenderer = visualBrushRenderer,
                 RenderContext = _renderContext,
