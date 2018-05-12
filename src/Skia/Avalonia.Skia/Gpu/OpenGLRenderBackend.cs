@@ -13,10 +13,10 @@ namespace Avalonia.Skia.Gpu
     public class OpenGLRenderBackend : IGpuRenderBackend
     {
         private readonly IOpenGLPlatform _openGLPlatform;
+        private readonly IWindowingPlatform _windowingPlatform;
         private IWindowImpl _resourceWindow;
         private IGpuRenderContext _resourceRenderContext;
-        private IWindowingPlatform _windowingPlatform;
-
+        
         /// <summary>
         /// Create new OpenGL render backend using provided platform.
         /// </summary>

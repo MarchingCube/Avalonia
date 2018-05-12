@@ -14,15 +14,16 @@ namespace Avalonia.Skia.Gpu
     /// </summary>
     public class OpenGLRenderContext : IGpuRenderContext
     {
+        private readonly IOpenGLPlatform _openGlPlatform;
         private readonly IOpenGLContext _context;
         private GRGlInterface _glInterface;
 
         public OpenGLRenderContext(IPlatformHandle platformHandle, IOpenGLPlatform openGLPlatform)
         {
-            if (openGLPlatform == null) throw new ArgumentNullException(nameof(openGLPlatform));
+            _openGlPlatform = openGLPlatform ?? throw new ArgumentNullException(nameof(openGLPlatform));
             PlatformHandle = platformHandle ?? throw new ArgumentNullException(nameof(platformHandle));
             
-            _context = openGLPlatform.CreateContext(platformHandle);
+            _context = _openGlPlatform.CreateContext(platformHandle);
 
             if (_context == null)
             {
@@ -49,7 +50,7 @@ namespace Avalonia.Skia.Gpu
         /// <inheritdoc />
         public FramebufferDescriptor GetPrimaryFramebufferDescriptor()
         {
-            _context.MakeCurrent();
+            _openGlPlatform.MakeContextCurrent(_context);
 
             var framebufferHandle = GL.GetInteger(GetPName.FramebufferBinding);
             var sampleCount = GL.GetInteger(GetPName.Samples);
@@ -73,7 +74,12 @@ namespace Avalonia.Skia.Gpu
         /// <inheritdoc />
         public void PrepareForRendering()
         {
-            _context.MakeCurrent();
+            if (_openGlPlatform.IsContextCurrent(_context))
+            {
+                return;
+            }
+
+            _openGlPlatform.MakeContextCurrent(_context);
         }
 
         /// <inheritdoc />
@@ -110,8 +116,10 @@ namespace Avalonia.Skia.Gpu
                 throw new InvalidOperationException("Failed to create OpenGL interface.");
             }
 
-            Context = GRContext.Create(GRBackend.OpenGL, _glInterface);
-
+            var options = GRContextOptions.Default;
+            
+            Context = GRContext.Create(GRBackend.OpenGL, _glInterface, options);
+            
             if (Context == null)
             {
                 Dispose();

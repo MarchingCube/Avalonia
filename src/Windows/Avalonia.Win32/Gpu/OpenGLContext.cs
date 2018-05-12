@@ -25,8 +25,14 @@ namespace Avalonia.Win32.Gpu
         public OpenGLContext(IWindowInfo windowInfo)
         {
             _windowInfo = windowInfo ?? throw new ArgumentNullException(nameof(windowInfo));
+            
+            const int stencilBits = 8; // Skia needs 8 bit stencil
+            const int depthBits = 0; // No need for depth
+            const int sampleCount = 4; // TODO: Expose sample count
 
-            _graphicsContext = new GraphicsContext(GraphicsMode.Default, _windowInfo, 4, 0, GraphicsContextFlags.Default);
+            var graphicsMode = new GraphicsMode(new ColorFormat(8, 8, 8, 0), depthBits, stencilBits, sampleCount);
+
+            _graphicsContext = new GraphicsContext(graphicsMode, _windowInfo, 4, 0, GraphicsContextFlags.Default);
             _graphicsContext.LoadAll();
         }
 
@@ -41,12 +47,6 @@ namespace Avalonia.Win32.Gpu
         public void ResizeNotify()
         {
             _graphicsContext.Update(_windowInfo);
-        }
-
-        /// <inheritdoc />
-        public void MakeCurrent()
-        {
-            _graphicsContext.MakeCurrent(_windowInfo);
         }
 
         /// <inheritdoc />
@@ -66,6 +66,14 @@ namespace Avalonia.Win32.Gpu
             UnmanagedMethods.GetClientRect(platformHandle.Handle, out UnmanagedMethods.RECT clientSize);
 
             return (clientSize.right - clientSize.left, clientSize.bottom - clientSize.top);
+        }
+
+        /// <summary>
+        /// Make context current.
+        /// </summary>
+        internal void MakeCurrent()
+        {
+            _graphicsContext.MakeCurrent(_windowInfo);
         }
     }
 }

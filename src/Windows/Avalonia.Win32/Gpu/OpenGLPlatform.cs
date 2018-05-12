@@ -12,6 +12,8 @@ namespace Avalonia.Win32.Gpu
     /// </summary>
     public class OpenGLPlatform : IOpenGLPlatform
     {
+        private OpenGLContext _currentContext;
+
         /// <inheritdoc />
         public IOpenGLContext CreateContext(IPlatformHandle platformHandle)
         {
@@ -27,7 +29,31 @@ namespace Avalonia.Win32.Gpu
                 throw new InvalidOperationException("Failed to create Win32 window info for platform handle.");
             }
 
-            return new OpenGLContext(windowInfo);
+            var context = new OpenGLContext(windowInfo);
+
+            // Context creation sets it as current
+            _currentContext = context;
+
+            return context;
+        }
+
+        public bool IsContextCurrent(IOpenGLContext context)
+        {
+            return _currentContext == context;
+        }
+
+        public void MakeContextCurrent(IOpenGLContext context)
+        {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            var contextImpl = (OpenGLContext) context;
+
+            _currentContext = contextImpl;
+
+            contextImpl.MakeCurrent();
         }
     }
 }

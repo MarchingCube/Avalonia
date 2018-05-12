@@ -16,11 +16,6 @@ namespace Avalonia.Platform.Gpu
         void ResizeNotify();
 
         /// <summary>
-        /// Make context current.
-        /// </summary>
-        void MakeCurrent();
-
-        /// <summary>
         /// Swap buffers of backing window.
         /// </summary>
         void SwapBuffers();
