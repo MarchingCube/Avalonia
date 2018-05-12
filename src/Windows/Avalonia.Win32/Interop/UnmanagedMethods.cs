@@ -313,7 +313,6 @@ namespace Avalonia.Win32.Interop
 
         public enum ClassStyles : uint
         {
-            ByteAlignClient = 0x1000,
             CS_VREDRAW = 0x0001,
             CS_HREDRAW = 0x0002,
             CS_DBLCLKS = 0x0008,

@@ -91,7 +91,7 @@ namespace Avalonia.Rendering
         /// <summary>
         /// Gets or sets a path to which rendered frame should be rendered for debugging.
         /// </summary>
-        public string DebugFramesPath { get; set; } //= @"C:\Repositories\Avalonia\frame-dump";
+        public string DebugFramesPath { get; set; }
 
         /// <summary>
         /// Gets the render layers.

@@ -26,7 +26,7 @@ namespace Avalonia.Win32.Gpu
         {
             _windowInfo = windowInfo ?? throw new ArgumentNullException(nameof(windowInfo));
 
-            _graphicsContext = new GraphicsContext(GraphicsMode.Default, _windowInfo, 4, 6, GraphicsContextFlags.Default);
+            _graphicsContext = new GraphicsContext(GraphicsMode.Default, _windowInfo, 4, 0, GraphicsContextFlags.Default);
             _graphicsContext.LoadAll();
         }
 
