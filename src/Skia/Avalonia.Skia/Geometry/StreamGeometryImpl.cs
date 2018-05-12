@@ -94,6 +94,7 @@ namespace Avalonia.Skia.Geometry
             public void Dispose()
             {
                 _geometryImpl._bounds = _path.TightBounds.ToAvaloniaRect();
+                _geometryImpl.InvalidateCaches();
             }
 
             /// <inheritdoc />
