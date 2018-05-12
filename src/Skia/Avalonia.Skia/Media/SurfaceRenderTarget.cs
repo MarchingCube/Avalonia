@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Diagnostics;
 using System.IO;
 using Avalonia.Platform;
 using Avalonia.Rendering;
@@ -10,7 +9,7 @@ using Avalonia.Skia.Gpu;
 using Avalonia.Skia.Helpers;
 using SkiaSharp;
 
-namespace Avalonia.Skia
+namespace Avalonia.Skia.Media
 {
     /// <summary>
     /// Skia render target that writes to a surface. Can be Gpu accelerated.

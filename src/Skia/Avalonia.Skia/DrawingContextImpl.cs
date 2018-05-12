@@ -11,6 +11,7 @@ using Avalonia.Rendering;
 using Avalonia.Rendering.Utilities;
 using Avalonia.Skia.Geometry;
 using Avalonia.Skia.Gpu;
+using Avalonia.Skia.Media;
 using Avalonia.Utilities;
 using SkiaSharp;
 
