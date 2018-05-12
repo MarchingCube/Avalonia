@@ -97,8 +97,8 @@ namespace Avalonia.Skia.Geometry
             {
                 UpdatePathCache(strokeWidth);
             }
-
-            return _pathCache.CachedGeometryRenderBounds;
+            
+            return _pathCache.CachedGeometryRenderBounds.Inflate(strokeWidth / 2.0);
         }
         
         /// <inheritdoc />
