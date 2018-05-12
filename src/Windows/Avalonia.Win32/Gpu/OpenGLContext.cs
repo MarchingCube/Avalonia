@@ -28,7 +28,7 @@ namespace Avalonia.Win32.Gpu
             
             const int stencilBits = 8; // Skia needs 8 bit stencil
             const int depthBits = 0; // No need for depth
-            const int sampleCount = 4; // TODO: Expose sample count
+            const int sampleCount = 0; // TODO: Expose sample count
 
             var graphicsMode = new GraphicsMode(new ColorFormat(8, 8, 8, 0), depthBits, stencilBits, sampleCount);
 
