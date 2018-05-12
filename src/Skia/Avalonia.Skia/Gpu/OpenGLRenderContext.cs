@@ -4,7 +4,6 @@
 using System;
 using Avalonia.Platform;
 using Avalonia.Platform.Gpu;
-using OpenTK.Graphics.OpenGL;
 using SkiaSharp;
 
 namespace Avalonia.Skia.Gpu
@@ -14,16 +13,16 @@ namespace Avalonia.Skia.Gpu
     /// </summary>
     public class OpenGLRenderContext : IGpuRenderContext
     {
-        private readonly IOpenGLPlatform _openGlPlatform;
+        private readonly IOpenGLPlatform _openGLPlatform;
         private readonly IOpenGLContext _context;
         private GRGlInterface _glInterface;
 
         public OpenGLRenderContext(IPlatformHandle platformHandle, IOpenGLPlatform openGLPlatform)
         {
-            _openGlPlatform = openGLPlatform ?? throw new ArgumentNullException(nameof(openGLPlatform));
+            _openGLPlatform = openGLPlatform ?? throw new ArgumentNullException(nameof(openGLPlatform));
             PlatformHandle = platformHandle ?? throw new ArgumentNullException(nameof(platformHandle));
             
-            _context = _openGlPlatform.CreateContext(platformHandle);
+            _context = _openGLPlatform.CreateContext(platformHandle);
 
             if (_context == null)
             {
@@ -48,21 +47,11 @@ namespace Avalonia.Skia.Gpu
         public IPlatformHandle PlatformHandle { get; }
 
         /// <inheritdoc />
-        public FramebufferDescriptor GetPrimaryFramebufferDescriptor()
+        public FramebufferParameters GetPrimaryFramebufferDescriptor()
         {
-            _openGlPlatform.MakeContextCurrent(_context);
+            _openGLPlatform.MakeContextCurrent(_context);
 
-            var framebufferHandle = GL.GetInteger(GetPName.FramebufferBinding);
-            var sampleCount = GL.GetInteger(GetPName.Samples);
-            GL.GetFramebufferAttachmentParameter(FramebufferTarget.Framebuffer, FramebufferAttachment.Stencil,
-                FramebufferParameterName.FramebufferAttachmentStencilSize, out int stencilBits);
-            
-            return new FramebufferDescriptor
-            {
-                FramebufferHandle = (IntPtr)framebufferHandle,
-                SampleCount = sampleCount,
-                StencilBits = stencilBits
-            };
+            return _context.GetCurrentFramebufferParameters();
         }
 
         /// <inheritdoc />
@@ -74,20 +63,14 @@ namespace Avalonia.Skia.Gpu
         /// <inheritdoc />
         public void PrepareForRendering()
         {
-            if (_openGlPlatform.IsContextCurrent(_context))
+            if (_openGLPlatform.IsContextCurrent(_context))
             {
                 return;
             }
 
-            _openGlPlatform.MakeContextCurrent(_context);
+            _openGLPlatform.MakeContextCurrent(_context);
         }
-
-        /// <inheritdoc />
-        public void Flush()
-        {
-           GL.Flush();
-        }
-
+        
         /// <inheritdoc />
         public void Present()
         {

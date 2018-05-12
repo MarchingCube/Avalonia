@@ -6,6 +6,7 @@ using Avalonia.Platform;
 using Avalonia.Platform.Gpu;
 using Avalonia.Win32.Interop;
 using OpenTK.Graphics;
+using OpenTK.Graphics.OpenGL4;
 using OpenTK.Platform;
 
 namespace Avalonia.Win32.Gpu
@@ -66,6 +67,22 @@ namespace Avalonia.Win32.Gpu
             UnmanagedMethods.GetClientRect(platformHandle.Handle, out UnmanagedMethods.RECT clientSize);
 
             return (clientSize.right - clientSize.left, clientSize.bottom - clientSize.top);
+        }
+
+        /// <inheritdoc />
+        public FramebufferParameters GetCurrentFramebufferParameters()
+        {
+            var framebufferHandle = GL.GetInteger(GetPName.FramebufferBinding);
+            var sampleCount = GL.GetInteger(GetPName.Samples);
+            GL.GetFramebufferAttachmentParameter(FramebufferTarget.Framebuffer, FramebufferAttachment.Stencil,
+                FramebufferParameterName.FramebufferAttachmentStencilSize, out int stencilBits);
+
+            return new FramebufferParameters
+            {
+                FramebufferHandle = (IntPtr)framebufferHandle,
+                SampleCount = sampleCount,
+                StencilBits = stencilBits
+            };
         }
 
         /// <summary>

@@ -22,6 +22,5 @@
     <ProjectReference Include="..\..\Avalonia.Visuals\Avalonia.Visuals.csproj" />
   </ItemGroup>
   <Import Project="..\..\..\build\SkiaSharp.props" />
-  <Import Project="..\..\..\build\OpenTK.props" />
   <Import Project="..\..\Shared\RenderHelpers\RenderHelpers.projitems" Label="Shared" />
 </Project>

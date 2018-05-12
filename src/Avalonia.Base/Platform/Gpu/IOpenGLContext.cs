@@ -26,5 +26,11 @@ namespace Avalonia.Platform.Gpu
         /// <param name="platformHandle">Platform handle.</param>
         /// <returns>Size of a framebuffer.</returns>
         (int width, int height) GetFramebufferSize(IPlatformHandle platformHandle);
+
+        /// <summary>
+        /// Gets current framebuffer parameters.
+        /// </summary>
+        /// <returns>Current framebuffer parameters.</returns>
+        FramebufferParameters GetCurrentFramebufferParameters();
     }
 }

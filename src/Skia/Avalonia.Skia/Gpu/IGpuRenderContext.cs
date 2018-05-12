@@ -3,6 +3,7 @@
 
 using System;
 using Avalonia.Platform;
+using Avalonia.Platform.Gpu;
 using SkiaSharp;
 
 namespace Avalonia.Skia.Gpu
@@ -23,10 +24,10 @@ namespace Avalonia.Skia.Gpu
         IPlatformHandle PlatformHandle { get; }
 
         /// <summary>
-        /// Get primary framebuffer (usually window) descriptor.
+        /// Get primary framebuffer (usually window) parameters.
         /// </summary>
-        /// <returns></returns>
-        FramebufferDescriptor GetPrimaryFramebufferDescriptor();
+        /// <returns>Framebuffer parameters.</returns>
+        FramebufferParameters GetPrimaryFramebufferDescriptor();
 
         /// <summary>
         /// Notify context that backing framebuffer was resized.
@@ -37,12 +38,7 @@ namespace Avalonia.Skia.Gpu
         /// Prepare context for rendering commands.
         /// </summary>
         void PrepareForRendering();
-
-        /// <summary>
-        /// Flush Gpu rendering commands.
-        /// </summary>
-        void Flush();
-
+        
         /// <summary>
         /// Present rendering results to framebuffer.
         /// </summary>
