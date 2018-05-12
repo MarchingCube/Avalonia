@@ -465,7 +465,7 @@ namespace Avalonia.Rendering
         {
             var index = 0;
 
-            foreach (var layer in  Layers)
+            foreach (var layer in Layers)
             {
                 var fileName = Path.Combine(DebugFramesPath, $"frame-{id}-layer-{index++}.png");
                 layer.Bitmap.Item.Save(fileName);
