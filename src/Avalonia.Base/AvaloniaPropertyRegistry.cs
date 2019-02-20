@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using Avalonia.Data;
 
 namespace Avalonia
@@ -24,8 +25,10 @@ namespace Avalonia
             new Dictionary<Type, List<AvaloniaProperty>>();
         private readonly Dictionary<Type, List<AvaloniaProperty>> _attachedCache =
             new Dictionary<Type, List<AvaloniaProperty>>();
-        private readonly Dictionary<Type, List<KeyValuePair<AvaloniaProperty, object>>> _initializedCache =
-            new Dictionary<Type, List<KeyValuePair<AvaloniaProperty, object>>>();
+        private readonly Dictionary<Type, List<DefaultValueData>> _initializedCache =
+            new Dictionary<Type, List<DefaultValueData>>();
+        private readonly HashSet<AvaloniaProperty> _initializedPropertySet =
+            new HashSet<AvaloniaProperty>();
 
         /// <summary>
         /// Gets the <see cref="AvaloniaPropertyRegistry"/> instance
@@ -227,7 +230,7 @@ namespace Avalonia
             {
                 _properties.Add(property.Id, property);
             }
-            
+
             _registeredCache.Clear();
             _initializedCache.Clear();
         }
@@ -288,33 +291,50 @@ namespace Avalonia
 
             if (!_initializedCache.TryGetValue(type, out var items))
             {
-                var build = new Dictionary<AvaloniaProperty, object>();
+                var build = new List<DefaultValueData>();
 
                 foreach (var property in GetRegistered(type))
                 {
                     var value = !property.IsDirect ?
                         ((IStyledPropertyAccessor)property).GetDefaultValue(type) :
                         null;
-                    build.Add(property, value);
+
+                    build.Add(new DefaultValueData(property, value));
+                    _initializedPropertySet.Add(property);
                 }
 
                 foreach (var property in GetRegisteredAttached(type))
                 {
-                    if (!build.ContainsKey(property))
+                    if (!_initializedPropertySet.Contains(property))
                     {
                         var value = ((IStyledPropertyAccessor)property).GetDefaultValue(type);
-                        build.Add(property, value);
+
+                        build.Add(new DefaultValueData(property, value));
+                        _initializedPropertySet.Add(property);
                     }
                 }
 
-                items = build.ToList();
+                items = build;
                 _initializedCache.Add(type, items);
+                _initializedPropertySet.Clear();
             }
 
-            foreach (var i in items)
+            foreach (var item in items)
             {
-                var value = i.Key.IsDirect ? o.GetValue(i.Key) : i.Value;
-                Notify(i.Key, value);
+                var value = item.Property.IsDirect ? o.GetValue(item.Property) : item.Value;
+                Notify(item.Property, value);
+            }
+        }
+
+        private readonly struct DefaultValueData
+        {
+            public AvaloniaProperty Property { get; }
+            public object Value { get; }
+
+            public DefaultValueData(AvaloniaProperty property, object value)
+            {
+                Property = property;
+                Value = value;
             }
         }
     }
