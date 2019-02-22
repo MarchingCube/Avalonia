@@ -35,7 +35,10 @@
             </Border>
         </StackPanel>
 
-        <StackPanel>
+        <StackPanel Orientation="Horizontal" 
+                    Margin="0,16,0,0"
+                    HorizontalAlignment="Center"
+                    Spacing="16">
             <Border Background="{DynamicResource ThemeAccentBrush}"
                     Padding="48,48,48,48">
                 <Border.ContextMenu>
