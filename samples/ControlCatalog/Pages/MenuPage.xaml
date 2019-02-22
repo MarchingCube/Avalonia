@@ -37,7 +37,7 @@
             </StackPanel>
 
             <StackPanel>
-                <TextBlock Classes="h3" Margin="4 8">Dyanamically generated</TextBlock>
+                <TextBlock Classes="h3" Margin="4 8">Dynamically generated</TextBlock>
                 <Menu Items="{Binding MenuItems}">
                     <Menu.Styles>
                         <Style Selector="MenuItem">

@@ -34,5 +34,27 @@
                 <TextBlock Text="Right Click Here"/>
             </Border>
         </StackPanel>
+
+        <StackPanel>
+            <Border Background="{DynamicResource ThemeAccentBrush}"
+                    Padding="48,48,48,48">
+                <Border.ContextMenu>
+                    <ContextMenu Items="{Binding MenuItems}">
+                        <ContextMenu.Styles>
+                            <Style Selector="MenuItem">
+                                <Setter Property="Header" Value="{Binding Header}"/>
+                                <Setter Property="Items" Value="{Binding Items}"/>
+                                <Setter Property="Command" Value="{Binding Command}"/>
+                                <Setter Property="CommandParameter" Value="{Binding CommandParameter}"/>
+                            </Style>
+                        </ContextMenu.Styles>
+                    </ContextMenu>
+
+                </Border.ContextMenu>
+                <TextBlock Text="Right Click Here - dynamically generated"/>
+            </Border>
+            
+        </StackPanel>
+
     </StackPanel>
 </UserControl>
