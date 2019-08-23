@@ -23,6 +23,7 @@ namespace ControlCatalog.Pages
         private class PageViewModel : ReactiveObject
         {
             private SelectionMode _selectionMode;
+            private Node _rememberedNode;
 
             public PageViewModel()
             {
@@ -63,6 +64,22 @@ namespace ControlCatalog.Pages
                         return false;
                     }
                 });
+
+                RememberItemCommand = ReactiveCommand.Create(() =>
+                {
+                    _rememberedNode = SelectedItems.FirstOrDefault();
+                });
+
+                GoToItemCommand = ReactiveCommand.Create(() =>
+                {
+                    if (_rememberedNode == null)
+                    {
+                        return;
+                    }
+
+                    SelectedItems.Clear();
+                    SelectedItems.Add(_rememberedNode);
+                });
             }
 
             public ObservableCollection<Node> Items { get; }
@@ -72,6 +89,10 @@ namespace ControlCatalog.Pages
             public ReactiveCommand<Unit, Unit> AddItemCommand { get; }
 
             public ReactiveCommand<Unit, Unit> RemoveItemCommand { get; }
+
+            public ReactiveCommand<Unit, Unit> RememberItemCommand { get; }
+
+            public ReactiveCommand<Unit, Unit> GoToItemCommand { get; }
 
             public SelectionMode SelectionMode
             {
