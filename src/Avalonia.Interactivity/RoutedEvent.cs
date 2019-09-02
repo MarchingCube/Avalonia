@@ -107,7 +107,7 @@ namespace Avalonia.Interactivity
                 {
                     try
                     {
-                        handler.DynamicInvoke(sender, e);
+                        handler(sender, e);
                     }
                     catch (TargetInvocationException ex)
                     {

@@ -328,7 +328,7 @@ namespace Avalonia
 
             VerifyAccess();
 
-            var description = GetDescription(source);
+            
 
             if (property.IsDirect)
             {
@@ -337,12 +337,14 @@ namespace Avalonia
                     throw new ArgumentException($"The property {property.Name} is readonly.");
                 }
 
-                Logger.Verbose(
-                    LogArea.Property, 
-                    this,
-                    "Bound {Property} to {Binding} with priority LocalValue", 
-                    property, 
-                    description);
+                //var description = GetDescription(source);
+
+                //Logger.Verbose(
+                //    LogArea.Property, 
+                //    this,
+                //    "Bound {Property} to {Binding} with priority LocalValue", 
+                //    property, 
+                //    description);
 
                 if (_directBindings == null)
                 {
@@ -353,13 +355,13 @@ namespace Avalonia
             }
             else
             {
-                Logger.Verbose(
-                    LogArea.Property,
-                    this,
-                    "Bound {Property} to {Binding} with priority {Priority}",
-                    property,
-                    description,
-                    priority);
+                //Logger.Verbose(
+                //    LogArea.Property,
+                //    this,
+                //    "Bound {Property} to {Binding} with priority {Priority}",
+                //    property,
+                //    description,
+                //    priority);
 
                 return Values.AddBinding(property, source, priority);
             }
@@ -407,7 +409,8 @@ namespace Avalonia
             if (!Equals(oldValue, newValue))
             {
                 RaisePropertyChanged(property, oldValue, newValue, (BindingPriority)priority);
-
+                
+                // TODO: WTF
                 Logger.Verbose(
                     LogArea.Property,
                     this,

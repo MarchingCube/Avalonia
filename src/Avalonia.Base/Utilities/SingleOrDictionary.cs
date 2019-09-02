@@ -5,6 +5,95 @@ using System.Linq;
 
 namespace Avalonia.Utilities
 {
+    public struct SingleOrDictionaryEx<TKey, TValue>
+    {
+        private KeyValuePair<TKey, TValue>? _singleValue;
+        private Dictionary<TKey, TValue> _dictionary;
+
+        public void Add(TKey key, TValue value)
+        {
+            if (_singleValue != null)
+            {
+                _dictionary = new Dictionary<TKey, TValue> { { key, value } };
+
+                _singleValue = null;
+            }
+
+            if (_dictionary != null)
+            {
+                _dictionary.Add(key, value);
+            }
+            else
+            {
+                _singleValue = new KeyValuePair<TKey, TValue>(key, value);
+            }
+        }
+
+        public bool TryGetValue(TKey key, out TValue value)
+        {
+            if (_dictionary == null)
+            {
+                if (_singleValue == null || !EqualityComparer<TKey>.Default.Equals(_singleValue.Value.Key, key))
+                {
+                    value = default;
+
+                    return false;
+                }
+
+                value = _singleValue.Value.Value;
+
+                return true;
+            }
+
+            return _dictionary.TryGetValue(key, out value);
+        }
+
+        public Enumerator GetEnumerator()
+        {
+            if (_dictionary != null)
+            {
+                return new Enumerator(_dictionary);
+            }
+
+            return new Enumerator(_singleValue);
+        }
+
+        public struct Enumerator : IEnumerator<KeyValuePair<TKey, TValue>>
+        {
+            private readonly KeyValuePair<TKey, TValue>? _value;
+            private readonly Dictionary<TKey, TValue>.Enumerator? _dictionaryEnumerator;
+
+            public Enumerator(KeyValuePair<TKey, TValue>? value)
+            {
+                _value = value;
+                _dictionaryEnumerator = null;
+            }
+
+            public bool MoveNext()
+            {
+                if (_dictionaryEnumerator.HasValue)
+                {
+                    return _dictionaryEnumerator.Value.MoveNext();
+                }
+
+                
+            }
+
+            public void Reset()
+            {
+                throw new NotImplementedException();
+            }
+
+            public KeyValuePair<TKey, TValue> Current { get; }
+
+            object IEnumerator.Current => Current;
+
+            public void Dispose()
+            {
+            }
+        }
+    }
+
     /// <summary>
     /// Stores either a single key value pair or constructs a dictionary when more than one value is stored.
     /// </summary>

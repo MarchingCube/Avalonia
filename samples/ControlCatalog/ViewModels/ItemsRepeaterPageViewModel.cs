@@ -11,7 +11,7 @@ namespace ControlCatalog.ViewModels
         public ItemsRepeaterPageViewModel()
         {
             Items = new ObservableCollection<string>(
-                Enumerable.Range(1, 100000).Select(i => $"Item {i}"));
+                Enumerable.Range(1, 2).Select(i => $"Item {i}"));
         }
 
         public ObservableCollection<string> Items { get; }

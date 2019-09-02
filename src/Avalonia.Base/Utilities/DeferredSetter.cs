@@ -14,6 +14,11 @@ namespace Avalonia.Utilities
     /// <param name="value">New value.</param>
     internal delegate void SetAndNotifyCallback<TValue>(AvaloniaProperty property, ref TValue backing, TValue value);
 
+    internal interface ISetAndNotifyHandler<TValue>
+    {
+        void HandleSetAndNotify(AvaloniaProperty property, ref TValue backing, TValue value);
+    }
+
     /// <summary>
     /// A utility class to enable deferring assignment until after property-changed notifications are sent.
     /// Used to fix #855.
@@ -70,14 +75,14 @@ namespace Avalonia.Utilities
             return false;
         }
 
-        public bool SetAndNotifyCallback<TValue>(AvaloniaProperty property, SetAndNotifyCallback<TValue> setAndNotifyCallback, ref TValue backing, TValue value)
+        public bool SetAndNotifyCallback<TValue>(AvaloniaProperty property, ISetAndNotifyHandler<TValue> setAndNotifyHandler, ref TValue backing, TValue value)
             where TValue : TSetRecord
         {
             if (!_isNotifying)
             {
                 using (new NotifyDisposable(this))
                 {
-                    setAndNotifyCallback(property, ref backing, value);
+                    setAndNotifyHandler.HandleSetAndNotify(property, ref backing, value);
                 }
 
                 if (!_pendingValues.Empty)
@@ -86,7 +91,7 @@ namespace Avalonia.Utilities
                     {
                         while (!_pendingValues.Empty)
                         {
-                            setAndNotifyCallback(property, ref backing, (TValue) _pendingValues.Dequeue());
+                            setAndNotifyHandler.HandleSetAndNotify(property, ref backing, (TValue)_pendingValues.Dequeue());
                         }
                     }
                 }

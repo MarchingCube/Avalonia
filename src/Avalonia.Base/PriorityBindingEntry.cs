@@ -82,7 +82,8 @@ namespace Avalonia
 
             if (binding is IDescription)
             {
-                Description = ((IDescription)binding).Description;
+                // Description = ((IDescription)binding).Description;
+                Description = string.Empty;
             }
 
             _subscription = binding.Subscribe(ValueChanged, Completed);

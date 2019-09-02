@@ -1,6 +1,7 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
 namespace Avalonia.Logging
@@ -42,6 +43,7 @@ namespace Avalonia.Logging
         /// <param name="messageTemplate">The message template.</param>
         /// <param name="propertyValues">The message property values.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [Conditional("USE_LOGGER")]
         public static void Verbose(
             string area,
             object source,
@@ -59,6 +61,7 @@ namespace Avalonia.Logging
         /// <param name="messageTemplate">The message template.</param>
         /// <param name="propertyValues">The message property values.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [Conditional("USE_LOGGER")]
         public static void Debug(
             string area,
             object source,
@@ -76,6 +79,7 @@ namespace Avalonia.Logging
         /// <param name="messageTemplate">The message template.</param>
         /// <param name="propertyValues">The message property values.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [Conditional("USE_LOGGER")]
         public static void Information(
             string area,
             object source,

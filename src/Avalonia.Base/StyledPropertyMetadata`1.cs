@@ -7,6 +7,18 @@ using Avalonia.Data;
 
 namespace Avalonia
 {
+    public readonly struct Box<T>
+    {
+        public Box(T value)
+        {
+            Boxed = value;
+            Value = value;
+        }
+
+        public object Boxed { get; }
+        public T Value { get; }
+    }
+
     /// <summary>
     /// Metadata for styled avalonia properties.
     /// </summary>
@@ -24,21 +36,21 @@ namespace Avalonia
             BindingMode defaultBindingMode = BindingMode.Default)
                 : base(defaultBindingMode)
         {
-            DefaultValue = defaultValue;
+            DefaultValue = new Box<TValue>(defaultValue);
             Validate = validate;
         }
 
         /// <summary>
         /// Gets the default value for the property.
         /// </summary>
-        public TValue DefaultValue { get; private set; }
+        public Box<TValue> DefaultValue { get; private set; }
 
         /// <summary>
         /// Gets the validation callback.
         /// </summary>
         public Func<IAvaloniaObject, TValue, TValue> Validate { get; private set; }
 
-        object IStyledPropertyMetadata.DefaultValue => DefaultValue;
+        object IStyledPropertyMetadata.DefaultValue => DefaultValue.Boxed;
 
         Func<IAvaloniaObject, object, object> IStyledPropertyMetadata.Validate => Cast(Validate);
 
@@ -51,7 +63,7 @@ namespace Avalonia
 
             if (src != null)
             {
-                if (DefaultValue == null)
+                if (DefaultValue.Boxed == null)
                 {
                     DefaultValue = src.DefaultValue;
                 }

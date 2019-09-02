@@ -21,7 +21,7 @@ namespace Avalonia.Controls.Presenters
         {
             if (Items != null && owner.Panel != null)
             {
-                AddContainers(0, Items);
+                //AddContainers(0, Items);
             }
         }
 
