@@ -28,7 +28,8 @@ namespace Avalonia
     {
         private readonly Type _valueType;
         private readonly SingleOrDictionary<int, PriorityLevel> _levels = new SingleOrDictionary<int, PriorityLevel>();
-        private readonly Func<object, object> _validate;
+        private readonly Func<IAvaloniaObject, object, object> _validate;
+        private readonly IAvaloniaObject _validationOwner;
         private (object value, int priority) _value;
         private DeferredSetter<object> _setter;
 
@@ -39,17 +40,20 @@ namespace Avalonia
         /// <param name="property">The property that the value represents.</param>
         /// <param name="valueType">The value type.</param>
         /// <param name="validate">An optional validation function.</param>
+        /// <param name="validationOwner">Required when validation function is used.</param>
         public PriorityValue(
             IPriorityValueOwner owner,
             AvaloniaProperty property, 
             Type valueType,
-            Func<object, object> validate = null)
+            Func<IAvaloniaObject, object, object> validate = null,
+            IAvaloniaObject validationOwner = null)
         {
             Owner = owner;
             Property = property;
             _valueType = valueType;
             _value = (AvaloniaProperty.UnsetValue, int.MaxValue);
             _validate = validate;
+            _validationOwner = validationOwner;
         }
 
         /// <summary>
@@ -279,7 +283,7 @@ namespace Avalonia
 
                 if (_validate != null && castValue != AvaloniaProperty.UnsetValue)
                 {
-                    castValue = _validate(castValue);
+                    castValue = _validate(_validationOwner, castValue);
                 }
 
                 backing = (castValue, update.priority);

@@ -152,18 +152,13 @@ namespace Avalonia
         private PriorityValue CreatePriorityValue(AvaloniaProperty property)
         {
             var validate = ((IStyledPropertyAccessor)property).GetValidationFunc(_owner.GetType());
-            Func<object, object> validate2 = null;
-
-            if (validate != null)
-            {
-                validate2 = v => validate(_owner, v);
-            }
-
+            
             return new PriorityValue(
                 this,
                 property,
                 property.PropertyType,
-                validate2);
+                validate,
+                _owner);
         }
 
         private object Validate(AvaloniaProperty property, object value)

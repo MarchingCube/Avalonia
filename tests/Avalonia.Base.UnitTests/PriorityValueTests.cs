@@ -255,7 +255,7 @@ namespace Avalonia.Base.UnitTests
         [Fact]
         public void Direct_Value_Should_Be_Coerced()
         {
-            var target = new PriorityValue(GetMockOwner().Object, TestProperty, typeof(int), x => Math.Min((int)x, 10));
+            var target = new PriorityValue(GetMockOwner().Object, TestProperty, typeof(int), (_, x) => Math.Min((int)x, 10), null);
 
             target.SetValue(5, 0);
             Assert.Equal(5, target.Value);
@@ -266,7 +266,7 @@ namespace Avalonia.Base.UnitTests
         [Fact]
         public void Bound_Value_Should_Be_Coerced()
         {
-            var target = new PriorityValue(GetMockOwner().Object, TestProperty, typeof(int), x => Math.Min((int)x, 10));
+            var target = new PriorityValue(GetMockOwner().Object, TestProperty, typeof(int), (_, x) => Math.Min((int)x, 10), null);
             var source = new Subject<object>();
 
             target.Add(source, 0);
@@ -280,7 +280,7 @@ namespace Avalonia.Base.UnitTests
         public void Revalidate_Should_ReCoerce_Value()
         {
             var max = 10;
-            var target = new PriorityValue(GetMockOwner().Object, TestProperty, typeof(int), x => Math.Min((int)x, max));
+            var target = new PriorityValue(GetMockOwner().Object, TestProperty, typeof(int), (_, x) => Math.Min((int)x, max), null);
             var source = new Subject<object>();
 
             target.Add(source, 0);
