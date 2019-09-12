@@ -22,7 +22,7 @@
                 <SolidColorBrush x:Key="ThemeControlHighBrush">DarkRed</SolidColorBrush>
               </Style.Resources>
             </Style>
-          </Button.Styles>          
+          </Button.Styles>
         </Button>
       </StackPanel>
 
@@ -32,6 +32,23 @@
         <Button BorderBrush="{DynamicResource ThemeAccentBrush}" BorderThickness="4">Thick Border</Button>
         <Button BorderBrush="{DynamicResource ThemeAccentBrush}" BorderThickness="4" IsEnabled="False">Disabled</Button>
       </StackPanel>
-    </StackPanel>    
+
+
+    </StackPanel>
+
+    <Grid ColumnDefinitions="0.4*,0.6*">
+      <Border Grid.Column="0" Padding="4" Background="Red">
+        <Decorator Name="First">
+          <Button Name="Ctrl" Content="Move me" />
+        </Decorator>
+      </Border>
+      <Border Grid.Column="1" Padding="4" Background="Yellow">
+        <Decorator Name="Second" />
+      </Border>
+
+    </Grid>
+
+    <Button Content="Toggle" Click="OnToggle" />
+
   </StackPanel>
 </UserControl>
