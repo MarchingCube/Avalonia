@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reactive.Linq;
+using Avalonia.Collections;
 using Avalonia.Data;
 using Avalonia.Diagnostics;
 using Avalonia.Logging;
@@ -742,7 +743,7 @@ namespace Avalonia
             }
 
             var result =  AvaloniaPropertyRegistry.Instance.GetRegistered(this)
-                .FirstOrDefault(x => x == property);
+                .FirstOrDefault(property, ObjectPredicates<AvaloniaProperty>.Equals);
 
             if (result == null)
             {

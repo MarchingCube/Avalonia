@@ -1,4 +1,5 @@
-﻿using Avalonia.Controls;
+﻿using System.Collections.Generic;
+using Avalonia.Controls;
 using BenchmarkDotNet.Attributes;
 
 namespace Avalonia.Benchmarks.Base
@@ -6,10 +7,18 @@ namespace Avalonia.Benchmarks.Base
     [MemoryDiagnoser]
     public class AvaloniaObjectInitializationBenchmark
     {
-        [Benchmark(OperationsPerInvoke = 1000)]
-        public Button InitializeButton()
+        private const int Count = 1000;
+        private static readonly List<Button> s_retain = new List<Button>(Count);
+
+        [Benchmark(OperationsPerInvoke = Count)]
+        public void InitializeButton()
         {
-            return new Button();
+            s_retain.Clear();
+
+            for (int i = 0; i < Count; ++i)
+            {
+                s_retain.Add(new Button());
+            }
         }
     }
 }

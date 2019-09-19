@@ -5,15 +5,23 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using Avalonia.Collections;
 using Avalonia.Data;
 
 namespace Avalonia
 {
+    
+
     /// <summary>
     /// Tracks registered <see cref="AvaloniaProperty"/> instances.
     /// </summary>
     public class AvaloniaPropertyRegistry
     {
+        private static readonly List<PropertyInitializationData> s_emptyInitialization = new List<PropertyInitializationData>(0);
+        private static readonly List<AvaloniaProperty> s_emptyProperties = new List<AvaloniaProperty>(0);
+
+        private readonly PropertySetPool _propertySetPool = PropertySetPool.Create();
+
         private readonly Dictionary<int, AvaloniaProperty> _properties =
             new Dictionary<int, AvaloniaProperty>();
         private readonly Dictionary<Type, Dictionary<int, AvaloniaProperty>> _registered =
@@ -45,13 +53,13 @@ namespace Avalonia
         /// </summary>
         /// <param name="type">The type.</param>
         /// <returns>A collection of <see cref="AvaloniaProperty"/> definitions.</returns>
-        public IEnumerable<AvaloniaProperty> GetRegistered(Type type)
+        public ReadOnlyList<AvaloniaProperty> GetRegistered(Type type)
         {
             Contract.Requires<ArgumentNullException>(type != null);
 
             if (_registeredCache.TryGetValue(type, out var result))
             {
-                return result;
+                return ReadOnlyList.From(result);
             }
 
             var t = type;
@@ -71,7 +79,8 @@ namespace Avalonia
             }
 
             _registeredCache.Add(type, result);
-            return result;
+
+            return ReadOnlyList.From(result);
         }
 
         /// <summary>
@@ -79,13 +88,13 @@ namespace Avalonia
         /// </summary>
         /// <param name="type">The type.</param>
         /// <returns>A collection of <see cref="AvaloniaProperty"/> definitions.</returns>
-        public IEnumerable<AvaloniaProperty> GetRegisteredAttached(Type type)
+        public ReadOnlyList<AvaloniaProperty> GetRegisteredAttached(Type type)
         {
             Contract.Requires<ArgumentNullException>(type != null);
 
             if (_attachedCache.TryGetValue(type, out var result))
             {
-                return result;
+                return ReadOnlyList.From(result);
             }
 
             var t = type;
@@ -102,7 +111,8 @@ namespace Avalonia
             }
 
             _attachedCache.Add(type, result);
-            return result;
+
+            return ReadOnlyList.From(result);
         }
 
         /// <summary>
@@ -110,39 +120,56 @@ namespace Avalonia
         /// </summary>
         /// <param name="type">The type.</param>
         /// <returns>A collection of <see cref="AvaloniaProperty"/> definitions.</returns>
-        public IEnumerable<AvaloniaProperty> GetRegisteredInherited(Type type)
+        public ReadOnlyList<AvaloniaProperty> GetRegisteredInherited(Type type)
         {
             Contract.Requires<ArgumentNullException>(type != null);
 
             if (_inheritedCache.TryGetValue(type, out var result))
             {
-                return result;
+                return ReadOnlyList.From(result);
             }
 
-            result = new List<AvaloniaProperty>();
-            var visited = new HashSet<AvaloniaProperty>();
+            ReadOnlyList<AvaloniaProperty> registered = GetRegistered(type);
+            ReadOnlyList<AvaloniaProperty> registeredAttached = GetRegisteredAttached(type);
 
-            foreach (var property in GetRegistered(type))
+            var maxRegisteredCapacity = registered.Count + registeredAttached.Count;
+
+            if (maxRegisteredCapacity > 0)
             {
-                if (property.Inherits)
+                result = new List<AvaloniaProperty>(maxRegisteredCapacity);
+
+                HashSet<AvaloniaProperty> visited = _propertySetPool.Rent();
+
+                foreach (var property in registered)
                 {
-                    result.Add(property);
-                    visited.Add(property);
-                }
-            }
-            foreach (var property in GetRegisteredAttached(type))
-            {
-                if (property.Inherits)
-                {
-                    if (!visited.Contains(property))
+                    if (property.Inherits)
                     {
                         result.Add(property);
+                        visited.Add(property);
                     }
                 }
+
+                foreach (var property in registeredAttached)
+                {
+                    if (property.Inherits)
+                    {
+                        if (!visited.Contains(property))
+                        {
+                            result.Add(property);
+                        }
+                    }
+                }
+
+                _propertySetPool.Return(visited);
+            }
+            else
+            {
+                result = s_emptyProperties;
             }
 
             _inheritedCache.Add(type, result);
-            return result;
+
+            return ReadOnlyList.From(result);
         }
 
         /// <summary>
@@ -150,7 +177,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="o">The object.</param>
         /// <returns>A collection of <see cref="AvaloniaProperty"/> definitions.</returns>
-        public IEnumerable<AvaloniaProperty> GetRegistered(AvaloniaObject o)
+        public ReadOnlyList<AvaloniaProperty> GetRegistered(AvaloniaObject o)
         {
             Contract.Requires<ArgumentNullException>(o != null);
 
@@ -178,7 +205,8 @@ namespace Avalonia
                 throw new InvalidOperationException("Attached properties not supported.");
             }
 
-            return GetRegistered(type).FirstOrDefault(x => x.Name == name);
+            return GetRegistered(type)
+                .FirstOrDefault(name, (AvaloniaProperty property, in string search) => property.Name == search);
         }
 
         /// <summary>
@@ -221,8 +249,8 @@ namespace Avalonia
             Contract.Requires<ArgumentNullException>(type != null);
             Contract.Requires<ArgumentNullException>(property != null);
 
-            return Instance.GetRegistered(type).Any(x => x == property) ||
-                Instance.GetRegisteredAttached(type).Any(x => x == property);
+            return Instance.GetRegistered(type).Any(property, ObjectPredicates<AvaloniaProperty>.Equals) ||
+                Instance.GetRegisteredAttached(type).Any(property, ObjectPredicates<AvaloniaProperty>.Equals);
         }
 
         /// <summary>
@@ -316,10 +344,26 @@ namespace Avalonia
         {
             Contract.Requires<ArgumentNullException>(o != null);
 
-            var type = o.GetType();
+            Type type = o.GetType();
 
-            void Notify(AvaloniaProperty property, object value)
+            if (!_initializedCache.TryGetValue(type, out var initializationData))
             {
+                CreatePropertyInitializationCache(type, out initializationData);
+            }
+
+            for (var index = 0; index < initializationData.Count; index++)
+            {
+                PropertyInitializationData data = initializationData[index];
+
+                AvaloniaProperty property = data.Property;
+
+                if (!property.HasNotifyInitializedObservers)
+                {
+                    continue;
+                }
+
+                object value = data.IsDirect ? data.DirectAccessor.GetValue(o) : data.Value;
+
                 var e = new AvaloniaPropertyChangedEventArgs(
                     o,
                     property,
@@ -329,50 +373,94 @@ namespace Avalonia
 
                 property.NotifyInitialized(e);
             }
+        }
 
-            if (!_initializedCache.TryGetValue(type, out var initializationData))
+        private void CreatePropertyInitializationCache(Type type, out List<PropertyInitializationData> initializationData)
+        {
+            ReadOnlyList<AvaloniaProperty> registered = GetRegistered(type);
+            ReadOnlyList<AvaloniaProperty> registeredAttached = GetRegisteredAttached(type);
+
+            var maxRegisteredCapacity = registered.Count + registeredAttached.Count;
+
+            if (maxRegisteredCapacity > 0)
             {
-                var visited = new HashSet<AvaloniaProperty>();
+                initializationData = new List<PropertyInitializationData>(maxRegisteredCapacity);
 
-                initializationData = new List<PropertyInitializationData>();
+                HashSet<AvaloniaProperty> visited = _propertySetPool.Rent();
 
-                foreach (AvaloniaProperty property in GetRegistered(type))
+                foreach (AvaloniaProperty property in registered)
                 {
                     if (property.IsDirect)
                     {
-                        initializationData.Add(new PropertyInitializationData(property, (IDirectPropertyAccessor)property));
+                        initializationData.Add(new PropertyInitializationData(property,
+                            (IDirectPropertyAccessor)property));
                     }
                     else
                     {
-                        initializationData.Add(new PropertyInitializationData(property, (IStyledPropertyAccessor)property, type));
+                        initializationData.Add(new PropertyInitializationData(property,
+                            (IStyledPropertyAccessor)property, type));
                     }
 
                     visited.Add(property);
                 }
 
-                foreach (AvaloniaProperty property in GetRegisteredAttached(type))
+                foreach (AvaloniaProperty property in registeredAttached)
                 {
                     if (!visited.Contains(property))
                     {
-                        initializationData.Add(new PropertyInitializationData(property, (IStyledPropertyAccessor)property, type));
+                        initializationData.Add(new PropertyInitializationData(property,
+                            (IStyledPropertyAccessor)property, type));
 
                         visited.Add(property);
                     }
                 }
 
-                _initializedCache.Add(type, initializationData);
+                _propertySetPool.Return(visited);
+            }
+            else
+            {
+                initializationData = s_emptyInitialization;
             }
 
-            foreach (PropertyInitializationData data in initializationData)
+            _initializedCache.Add(type, initializationData);
+        }
+
+        /// <summary>
+        /// Allow for pooling property sets used for initializing objects.
+        /// Required because we are running arbitrary code from the handlers
+        /// and user might create new object, which requires second set.
+        /// </summary>
+        private readonly struct PropertySetPool
+        {
+            private readonly Stack<HashSet<AvaloniaProperty>> _pool;
+
+            public static PropertySetPool Create()
             {
-                if (!data.Property.HasNotifyInitializedObservers)
+                return new PropertySetPool(new Stack<HashSet<AvaloniaProperty>>(1));
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public HashSet<AvaloniaProperty> Rent()
+            {
+                if (_pool.Count > 0)
                 {
-                    continue;
+                    return _pool.Pop();
                 }
 
-                object value = data.IsDirect ? data.DirectAccessor.GetValue(o) : data.Value;
+                return new HashSet<AvaloniaProperty>();
+            }
 
-                Notify(data.Property, value);
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public void Return(HashSet<AvaloniaProperty> set)
+            {
+                set.Clear();
+
+                _pool.Push(set);
+            }
+
+            private PropertySetPool(Stack<HashSet<AvaloniaProperty>> pool)
+            {
+                _pool = pool;
             }
         }
 

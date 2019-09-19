@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using Avalonia.Logging;
 using Avalonia.Threading;
+using Avalonia.Collections;
 
 namespace Avalonia.Rendering
 {
@@ -91,17 +92,7 @@ namespace Avalonia.Rendering
             {
                 try
                 {
-                    bool needsUpdate = false;
-
-                    foreach (IRenderLoopTask item in _items)
-                    {
-                        if (item.NeedsUpdate)
-                        {
-                            needsUpdate = true;
-
-                            break;
-                        }
-                    }
+                    var needsUpdate = _items.Any(null, (IRenderLoopTask item, in object _) => item.NeedsUpdate);
 
                     if (needsUpdate &&
                         Interlocked.CompareExchange(ref _inUpdate, 1, 0) == 0)
