@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace Avalonia.Collections
@@ -62,6 +63,22 @@ namespace Avalonia.Collections
             finally
             {
                 enumerator.Dispose();
+            }
+        }
+
+        public static bool Any<TEnumerator, T>(TEnumerator enumerator, Predicate<T> predicate)
+            where TEnumerator : IEnumerator<T>
+        {
+            return Any(enumerator, predicate, StatelessPredicateAdapter<T>.Instance);
+        }
+
+        private static class StatelessPredicateAdapter<T>
+        {
+            public static readonly PredicateWithState<T, Predicate<T>> Instance = Adapt;
+
+            private static bool Adapt(T instance, in Predicate<T> inner)
+            {
+                return inner(instance);
             }
         }
     }

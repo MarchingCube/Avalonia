@@ -92,7 +92,7 @@ namespace Avalonia.Rendering
             {
                 try
                 {
-                    var needsUpdate = _items.Any(null, (IRenderLoopTask item, in object _) => item.NeedsUpdate);
+                    var needsUpdate = _items.Any(item => item.NeedsUpdate);
 
                     if (needsUpdate &&
                         Interlocked.CompareExchange(ref _inUpdate, 1, 0) == 0)

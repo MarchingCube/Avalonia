@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace Avalonia.Collections
@@ -19,6 +20,12 @@ namespace Avalonia.Collections
             PredicateWithState<T, TState> predicate)
         {
             return EnumeratorOperations.Any(source.GetEnumerator(), in state, predicate);
+        }
+
+        public static bool Any<T>(this List<T> source,
+            Predicate<T> predicate)
+        {
+            return EnumeratorOperations.Any(source.GetEnumerator(), predicate);
         }
     }
 }
