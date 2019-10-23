@@ -1,37 +1,36 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="ControlCatalog.Pages.ButtonPage">
-  <StackPanel Orientation="Vertical" Spacing="4">
-    <TextBlock Classes="h1">Button</TextBlock>
-    <TextBlock Classes="h2">A button control</TextBlock>
+  
 
-    <StackPanel Orientation="Horizontal"
-                Margin="0,16,0,0"
-                HorizontalAlignment="Center"
-                Spacing="16">
-      <StackPanel Orientation="Vertical" Spacing="8" Width="150">
-        <Button>Button</Button>
-        <Button Foreground="White">Foreground</Button>
-        <Button Background="{DynamicResource ThemeAccentBrush}">Background</Button>
-        <Button IsEnabled="False">Disabled</Button>
-        <Button Content="Re-themed">
-          <Button.Styles>
-            <Style>
-              <Style.Resources>
-                <SolidColorBrush x:Key="ThemeBorderMidBrush">Red</SolidColorBrush>
-                <SolidColorBrush x:Key="ThemeControlHighBrush">DarkRed</SolidColorBrush>
-              </Style.Resources>
-            </Style>
-          </Button.Styles>          
-        </Button>
+    <Grid RowDefinitions="Auto,Auto,*, Auto">
+
+      <TextBlock Margin="20" TextWrapping="Wrap">
+        List box is crashing when filtering using ReactiveUI. It seems like it is related to scroll in to view when filter returns currently selected item. To trigger it, first load the list by clicking on the load button and the start typing �last�.
+      </TextBlock>
+
+      <StackPanel Grid.Row="1" Background="Silver" Orientation="Horizontal" Spacing="5">
+        <TextBlock Margin="4" VerticalAlignment="Center" Text="Filter: "/>
+        <TextBox 
+          Width="300"
+          Margin="4"
+          HorizontalAlignment="Stretch"
+          Watermark="Item name"
+          Text="{Binding SearchText}" />
       </StackPanel>
 
-      <StackPanel Orientation="Vertical" Spacing="8" Width="150">
-        <Button BorderThickness="0">No Border</Button>
-        <Button BorderBrush="{DynamicResource ThemeAccentBrush}">Border Color</Button>
-        <Button BorderBrush="{DynamicResource ThemeAccentBrush}" BorderThickness="4">Thick Border</Button>
-        <Button BorderBrush="{DynamicResource ThemeAccentBrush}" BorderThickness="4" IsEnabled="False">Disabled</Button>
-      </StackPanel>
-    </StackPanel>    
-  </StackPanel>
+
+      <ListBox Grid.Row="2"
+               AutoScrollToSelectedItem="True"
+               Items="{Binding AvailableItems}"
+               SelectedItem="{Binding SelectedText}"
+               BorderThickness="0,1,0,0"
+               Margin="0,0,0,0">
+
+      </ListBox>
+
+      <Button Grid.Row="3" Content="Load" Click="OnClick"/>
+
+    </Grid>
+
 </UserControl>
