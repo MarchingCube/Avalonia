@@ -1146,6 +1146,51 @@ namespace Avalonia.Controls.UnitTests.Primitives
         }
 
         [Fact]
+        public void Can_Update_Selection_During_Collection_Change()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var items = new ResettingCollection(100);
+
+                ListBox target = null;
+
+                items.CollectionChanged += (sender, args) =>
+                {
+                    target.SelectedItem = "Item98";
+                };
+
+                target = new ListBox
+                {
+                    Items = items,
+                    ItemTemplate = new FuncDataTemplate<string>((x, _) =>
+                        new TextBlock
+                        {
+                            Text = x,
+                            Width = 100,
+                            Height = 10
+                        }),
+                    AutoScrollToSelectedItem = true,
+                    VirtualizationMode = ItemVirtualizationMode.Simple,
+                };
+
+                var root = new TestRoot(true, target);
+                root.Measure(new Size(100, 100));
+                root.Arrange(new Rect(0, 0, 100, 100));
+
+                Assert.True(target.Presenter.Panel.Children.Count > 0);
+                Assert.True(target.Presenter.Panel.Children.Count < 100);
+
+                target.SelectedItem = "Item99";
+
+                items.Reset(new[] { "Item98" });
+
+                Assert.Equal(0, target.SelectedIndex);
+                Assert.Equal(1, target.Presenter.Panel.Children.Count);
+                Assert.Equal("Item98", target.SelectedItem);
+            }
+        }
+
+        [Fact]
         public void Can_Set_Both_SelectedItem_And_SelectedItems_During_Initialization()
         {
             // Issue #2969.
