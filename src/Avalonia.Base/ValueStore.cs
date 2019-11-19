@@ -92,7 +92,7 @@ namespace Avalonia
             }
             else if (priority == BindingPriority.LocalValue)
             {
-                _values.AddValue(property, (object)value!);
+                _values.AddValue(property, new LocalValueEntry<T>(value));
                 _sink.ValueChanged(property, priority, default, value);
             }
             else
@@ -169,13 +169,35 @@ namespace Avalonia
             }
         }
 
+        public class LocalValueEntry<T> : IValue<T>
+        {
+            public LocalValueEntry(T value)
+            {
+                Value = value;
+            }
+
+            Optional<object> IValue.Value => Value;
+
+            public Optional<T> Value { get; set; }
+
+            public BindingPriority ValuePriority => BindingPriority.LocalValue;
+        }
+
         private void SetExisting<T>(
             object slot,
             StyledPropertyBase<T> property,
             T value,
             BindingPriority priority)
         {
-            if (slot is IPriorityValueEntry<T> e)
+            if (priority == BindingPriority.LocalValue && slot is LocalValueEntry<T> oldLocal)
+            {
+                var oldValue = oldLocal.Value;
+
+                oldLocal.Value = value;
+                
+                _sink.ValueChanged(property, priority, oldValue, value);
+            }
+            else if (slot is IPriorityValueEntry<T> e)
             {
                 var priorityValue = new PriorityValue<T>(_owner, property, this, e);
                 _values.SetValue(property, priorityValue);
