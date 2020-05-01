@@ -57,8 +57,7 @@ namespace Avalonia.Native
 
         public void ShowChild(IWindowImpl parent)
         {
-            // TODO: How to set parent?
-            _native.Show();
+            _native.ShowChild(((WindowImpl)parent).Native);
         }
 
         public void ShowDialog(IWindowImpl window)
