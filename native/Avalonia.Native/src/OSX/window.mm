@@ -442,6 +442,26 @@ private:
         }
     }
     
+    virtual HRESULT ShowChild (IAvnWindow* parent) override
+    {
+        @autoreleasepool
+        {
+            if(parent == nullptr)
+                return E_POINTER;
+
+            auto cparent = dynamic_cast<WindowImpl*>(parent);
+            if(cparent == nullptr)
+                return E_INVALIDARG;
+            
+            [Window setModal:FALSE];
+            
+            [cparent->Window addChildWindow:Window ordered:NSWindowAbove];
+            WindowBaseImpl::Show();
+            
+            return S_OK;
+        }
+    }
+    
     virtual HRESULT ShowDialog (IAvnWindow* parent) override
     {
         @autoreleasepool
