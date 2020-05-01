@@ -245,6 +245,7 @@ AVNCOM(IAvnPopup, 03) : virtual IAvnWindowBase
 
 AVNCOM(IAvnWindow, 04) : virtual IAvnWindowBase
 {
+    virtual HRESULT ShowChild (IAvnWindow* parent) = 0;
     virtual HRESULT ShowDialog (IAvnWindow* parent) = 0;
     virtual HRESULT SetCanResize(bool value) = 0;
     virtual HRESULT SetDecorations(SystemDecorations value) = 0;
