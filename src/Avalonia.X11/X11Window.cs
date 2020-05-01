@@ -780,6 +780,11 @@ namespace Avalonia.X11
                 child.Activate();
             return true;
         }
+
+        void SetParent(X11Window window)
+        {
+            SetTransientForHint(window?._handle);
+        }
         
         void SetTransientParent(X11Window window, bool informServer = true)
         {
@@ -1033,6 +1038,12 @@ namespace Avalonia.X11
         public void SetTopmost(bool value)
         {
             ChangeWMAtoms(value, _x11.Atoms._NET_WM_STATE_ABOVE);
+        }
+
+        public void ShowChild(IWindowImpl parent)
+        {
+            SetParent((X11Window)parent);
+            ShowCore();
         }
 
         public void ShowDialog(IWindowImpl parent)

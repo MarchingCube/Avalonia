@@ -323,9 +323,8 @@ namespace Avalonia.Controls.UnitTests
                     var window = new Window();
                     window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
                     window.Position = new PixelPoint(60, 40);
-                    window.Owner = parentWindow;
 
-                    window.Show();
+                    window.ShowChild(parentWindow);
 
                     var expectedPosition = new PixelPoint(
                         (int)(parentWindow.Position.X + parentWindow.ClientSize.Width / 2 - window.ClientSize.Width / 2),

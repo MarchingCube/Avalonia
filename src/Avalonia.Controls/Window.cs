@@ -406,6 +406,7 @@ namespace Avalonia.Controls
 
             using (BeginAutoSizing())
             {
+                Owner = null;
                 Renderer?.Stop();
                 PlatformImpl?.Hide();
             }
@@ -421,42 +422,12 @@ namespace Avalonia.Controls
         /// </exception>
         public override void Show()
         {
-            if (PlatformImpl == null)
-            {
-                throw new InvalidOperationException("Cannot re-show a closed window.");
-            }
+            ShowCore(null);
+        }
 
-            if (IsVisible)
-            {
-                return;
-            }
-
-            this.RaiseEvent(new RoutedEventArgs(WindowOpenedEvent));
-
-            EnsureInitialized();
-            IsVisible = true;
-
-            var initialSize = new Size(
-                double.IsNaN(Width) ? ClientSize.Width : Width,
-                double.IsNaN(Height) ? ClientSize.Height : Height);
-
-            if (initialSize != ClientSize)
-            {
-                using (BeginAutoSizing())
-                {
-                    PlatformImpl?.Resize(initialSize);
-                }
-            }
-
-            LayoutManager.ExecuteInitialLayoutPass(this);
-
-            using (BeginAutoSizing())
-            {
-                PlatformImpl?.Show();
-                Renderer?.Start();
-            }
-            SetWindowStartupLocation(Owner?.PlatformImpl);
-            OnOpened(EventArgs.Empty);
+        public void ShowChild(Window owner)
+        {
+            ShowCore(owner);
         }
 
         /// <summary>
@@ -495,6 +466,8 @@ namespace Avalonia.Controls
             {
                 throw new InvalidOperationException("The window is already being shown.");
             }
+
+            Owner = owner;
 
             RaiseEvent(new RoutedEventArgs(WindowOpenedEvent));
 
@@ -680,6 +653,57 @@ namespace Avalonia.Controls
 #pragma warning restore CS0618 // Type or member is obsolete
                 }
             }
+        }
+
+        private void ShowCore(Window owner)
+        {
+            if (PlatformImpl == null)
+            {
+                throw new InvalidOperationException("Cannot re-show a closed window.");
+            }
+
+            if (IsVisible)
+            {
+                return;
+            }
+
+            Owner = owner;
+
+            RaiseEvent(new RoutedEventArgs(WindowOpenedEvent));
+
+            EnsureInitialized();
+            IsVisible = true;
+
+            var initialSize = new Size(
+                double.IsNaN(Width) ? ClientSize.Width : Width,
+                double.IsNaN(Height) ? ClientSize.Height : Height);
+
+            if (initialSize != ClientSize)
+            {
+                using (BeginAutoSizing())
+                {
+                    PlatformImpl?.Resize(initialSize);
+                }
+            }
+
+            LayoutManager.ExecuteInitialLayoutPass(this);
+
+            using (BeginAutoSizing())
+            {
+                if (owner != null)
+                {
+                    PlatformImpl?.ShowChild(owner.PlatformImpl);
+                }
+                else
+                {
+                    PlatformImpl?.Show();
+                }
+
+                Renderer?.Start();
+            }
+
+            SetWindowStartupLocation(Owner?.PlatformImpl);
+            OnOpened(EventArgs.Empty);
         }
     }
 }

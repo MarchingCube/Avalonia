@@ -33,8 +33,7 @@ namespace Avalonia.Controls
         public static readonly DirectProperty<WindowBase, WindowBase> OwnerProperty =
             AvaloniaProperty.RegisterDirect<WindowBase, WindowBase>(
                 nameof(Owner),
-                o => o.Owner,
-                (o, v) => o.Owner = v);
+                o => o.Owner);
 
         public static readonly StyledProperty<bool> TopmostProperty =
             AvaloniaProperty.Register<WindowBase, bool>(nameof(Topmost));
@@ -49,7 +48,6 @@ namespace Avalonia.Controls
             IsVisibleProperty.OverrideDefaultValue<WindowBase>(false);
             IsVisibleProperty.Changed.AddClassHandler<WindowBase>((x,e) => x.IsVisibleChanged(e));
 
-            
             TopmostProperty.Changed.AddClassHandler<WindowBase>((w, e) => w.PlatformImpl?.SetTopmost((bool)e.NewValue));
         }
 
@@ -109,7 +107,7 @@ namespace Avalonia.Controls
         public WindowBase Owner
         {
             get { return _owner; }
-            set { SetAndRaise(OwnerProperty, ref _owner, value); }
+            protected set { SetAndRaise(OwnerProperty, ref _owner, value); }
         }
 
         /// <summary>
@@ -138,6 +136,7 @@ namespace Avalonia.Controls
 
             try
             {
+                Owner = null;
                 Renderer?.Stop();
                 PlatformImpl?.Hide();
                 IsVisible = false;
@@ -210,6 +209,8 @@ namespace Avalonia.Controls
             try
             {
                 IsVisible = false;
+                Owner = null;
+
                 base.HandleClosed();
             }
             finally
