@@ -62,6 +62,7 @@ namespace Avalonia.Win32
         private OleDropTarget _dropTarget;
         private Size _minSize;
         private Size _maxSize;
+        private WindowImpl _transientParent;
         private WindowImpl _parent;
 
         public WindowImpl()
@@ -339,28 +340,39 @@ namespace Avalonia.Win32
 
         public void Hide()
         {
-            if (_parent != null)
-            {
-                _parent._disabledBy.Remove(this);
-                _parent.UpdateEnabled();
-                _parent = null;
-            }
+            HandleOwnershipOnClose();
 
             UnmanagedMethods.ShowWindow(_hwnd, ShowWindowCommand.Hide);
         }
 
         public virtual void Show()
         {
-            SetWindowLongPtr(_hwnd, (int)WindowLongParam.GWL_HWNDPARENT, IntPtr.Zero);
+            ShowWindow(_showWindowState);
+        }
+
+        public void ShowChild(IWindowImpl parent)
+        {
+            var parentImpl = (WindowImpl)parent;
+
+            CheckForOwnershipCycle(parentImpl);
+
+            _parent = parentImpl;
+
+            SetOwnerHandle(_parent._hwnd);
             ShowWindow(_showWindowState);
         }
 
         public void ShowDialog(IWindowImpl parent)
         {
-            _parent = (WindowImpl)parent;
-            _parent._disabledBy.Add(this);
-            _parent.UpdateEnabled();
-            SetWindowLongPtr(_hwnd, (int)WindowLongParam.GWL_HWNDPARENT, ((WindowImpl)parent)._hwnd);
+            var parentImpl = (WindowImpl)parent;
+
+            CheckForOwnershipCycle(parentImpl);
+
+            _transientParent = (WindowImpl)parent;
+            _transientParent._disabledBy.Add(this);
+            _transientParent.UpdateEnabled();
+
+            SetOwnerHandle(((WindowImpl)parent)._hwnd);
             ShowWindow(_showWindowState);
         }
 
@@ -600,9 +612,41 @@ namespace Avalonia.Win32
 
         private void SetExtendedStyle(WindowStyles style) => SetWindowLong(_hwnd, (int)WindowLongParam.GWL_EXSTYLE, (uint)style);
 
+        private void SetOwnerHandle(IntPtr handle) => SetWindowLongPtr(_hwnd, (int)WindowLongParam.GWL_HWNDPARENT, handle);
+
         private void UpdateEnabled()
         {
             EnableWindow(_hwnd, _disabledBy.Count == 0);
+        }
+
+        private void HandleOwnershipOnClose()
+        {
+            if (_transientParent != null)
+            {
+                _transientParent._disabledBy.Remove(this);
+                _transientParent.UpdateEnabled();
+
+                _transientParent = null;
+            }
+
+            _parent = null;
+
+            SetOwnerHandle(IntPtr.Zero);
+        }
+
+        private void CheckForOwnershipCycle(WindowImpl owner)
+        {
+            var current = owner;
+
+            while (current != null)
+            {
+                if (current == this)
+                {
+                    throw new ArgumentException("Owner cannot have circular relationships.");
+                }
+
+                current = current._parent;
+            }
         }
 
         private void UpdateWindowProperties(WindowProperties newProperties)

@@ -42,6 +42,7 @@ namespace ControlCatalog.Pages
                     InitialFileName = Assembly.GetEntryAssembly()?.GetModules().FirstOrDefault()?.FullyQualifiedName
                 }.ShowAsync(GetWindow());
             };
+
             this.FindControl<Button>("SaveFile").Click += delegate
             {
                 new SaveFileDialog()
@@ -51,6 +52,7 @@ namespace ControlCatalog.Pages
                     InitialFileName = "test.txt"
                 }.ShowAsync(GetWindow());
             };
+
             this.FindControl<Button>("SelectFolder").Click += delegate
             {
                 new OpenFolderDialog()
@@ -58,26 +60,46 @@ namespace ControlCatalog.Pages
                     Title = "Select folder",
                 }.ShowAsync(GetWindow());
             };
+
             this.FindControl<Button>("DecoratedWindow").Click += delegate
             {
                 new DecoratedWindow().Show();
             };
+
             this.FindControl<Button>("DecoratedWindowDialog").Click += delegate
             {
                 new DecoratedWindow().ShowDialog(GetWindow());
             };
+
             this.FindControl<Button>("Dialog").Click += delegate
             {
                 var window = CreateSampleWindow();
-                window.Height = 200;
+
                 window.ShowDialog(GetWindow());
             };
+
             this.FindControl<Button>("DialogNoTaskbar").Click += delegate
             {
                 var window = CreateSampleWindow();
-                window.Height = 200;
+
                 window.ShowInTaskbar = false;
                 window.ShowDialog(GetWindow());
+            };
+
+            this.FindControl<Button>("OwnedWindow").Click += delegate
+            {
+                var window = CreateSampleWindow();
+
+                window.ShowChild(GetWindow());
+            };
+
+            this.FindControl<Button>("OwnedWindowNoTaskbar").Click += delegate
+            {
+                var window = CreateSampleWindow();
+
+                window.ShowInTaskbar = false;
+
+                window.ShowChild(GetWindow());
             };
         }
 

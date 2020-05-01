@@ -106,6 +106,10 @@ namespace Avalonia.DesignerSupport.Remote
         {
         }
 
+        public void ShowChild(IWindowImpl parent)
+        {
+        }
+
         public void ShowDialog(IWindowImpl parent)
         {
         }

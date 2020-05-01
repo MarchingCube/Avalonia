@@ -26,6 +26,11 @@ namespace Avalonia.Platform
         void SetTitle(string title);
 
         /// <summary>
+        /// Shows the window as a child window.
+        /// </summary>
+        void ShowChild(IWindowImpl parent);
+
+        /// <summary>
         /// Shows the window as a dialog.
         /// </summary>
         void ShowDialog(IWindowImpl parent);
@@ -80,7 +85,6 @@ namespace Avalonia.Platform
         /// <summary>
         /// Minimum width of the window.
         /// </summary>
-        /// 
         void SetMinMaxSize(Size minSize, Size maxSize);
     }
 }
