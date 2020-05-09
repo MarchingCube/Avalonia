@@ -42,7 +42,9 @@ namespace Avalonia.X11
         private bool _mapped;
         private bool _wasMappedAtLeastOnce = false;
         private HashSet<X11Window> _transientChildren = new HashSet<X11Window>();
+        private HashSet<X11Window> _children = new HashSet<X11Window>();
         private X11Window _transientParent;
+        private X11Window _parent;
         private double? _scalingOverride;
         public object SyncRoot { get; } = new object();
 
@@ -461,7 +463,7 @@ namespace Avalonia.X11
                 {
                     if (ev.ClientMessageEvent.ptr1 == _x11.Atoms.WM_DELETE_WINDOW)
                     {
-                        if (Closing?.Invoke() != true)
+                        if (_children.Count == 0 && Closing?.Invoke() != true)
                             Dispose();
                     }
 
@@ -735,6 +737,7 @@ namespace Avalonia.X11
         void Cleanup()
         {
             SetTransientParent(null, false);
+            SetParent(null, false);
             if (_xic != IntPtr.Zero)
             {
                 XDestroyIC(_xic);
@@ -769,9 +772,13 @@ namespace Avalonia.X11
             return true;
         }
 
-        void SetParent(X11Window window)
+        void SetParent(X11Window window, bool informServer = true)
         {
-            SetTransientForHint(window?._handle);
+            _parent?._children.Remove(this);
+            _parent = window;
+            _parent?._children.Add(this);
+            if (informServer)
+                SetTransientForHint(window?._handle);
         }
         
         void SetTransientParent(X11Window window, bool informServer = true)
