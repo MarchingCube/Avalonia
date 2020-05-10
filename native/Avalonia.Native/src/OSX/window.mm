@@ -1466,6 +1466,15 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     
     if(window != nullptr)
     {
+        for(NSWindow* uch in [self childWindows])
+        {
+            auto ch = objc_cast<AvnWindow>(uch);
+            if(ch == nil)
+                continue;
+            
+            return false;
+        }
+        
         return !window->WindowEvents->Closing();
     }
     
