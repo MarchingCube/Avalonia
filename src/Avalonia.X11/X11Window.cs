@@ -460,10 +460,16 @@ namespace Avalonia.X11
                 {
                     if (ev.ClientMessageEvent.ptr1 == _x11.Atoms.WM_DELETE_WINDOW)
                     {
-                        if (_children.Count == 0 && Closing?.Invoke() != true)
-                            Dispose();
+                        if (CloseTransientChildrenRecursively(this, true))
+                        {
+                            if (Closing?.Invoke() != true)
+                            {
+                                CloseChildrenRecursively(this, true);
+                                
+                                Dispose();
+                            }
+                        }
                     }
-
                 }
             }
             else if (ev.type == XEventName.KeyPress || ev.type == XEventName.KeyRelease)
@@ -504,6 +510,38 @@ namespace Avalonia.X11
                     }
                 }
             }
+        }
+
+        private bool CloseTransientChildrenRecursively(X11Window window, bool isRoot)
+        {
+            foreach (var child in window._transientChildren.ToArray())
+            {
+                if (!CloseTransientChildrenRecursively(child, false))
+                    return false;
+            }
+
+            if (isRoot)
+                return true;
+            
+            if (window.Closing?.Invoke() != true)
+            {
+                window.Dispose();
+
+                return true;
+            }
+
+            return false;
+        }
+        
+        private void CloseChildrenRecursively(X11Window window, bool isRoot)
+        {
+            foreach (var child in window._children.ToArray())
+            {
+                CloseChildrenRecursively(child, false);
+            }
+
+            if (!isRoot)
+                window.Dispose();
         }
 
         private bool UpdateScaling(bool skipResize = false)
