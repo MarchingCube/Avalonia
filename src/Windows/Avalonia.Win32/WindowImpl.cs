@@ -66,7 +66,7 @@ namespace Avalonia.Win32
         private OleDropTarget _dropTarget;
         private Size _minSize;
         private Size _maxSize;
-        private WindowImpl _transientParent;
+        private WindowImpl _dialogParent;
         private WindowImpl _parent;
 
         public WindowImpl()
@@ -371,9 +371,9 @@ namespace Avalonia.Win32
 
             CheckForOwnershipCycle(parentImpl);
 
-            _transientParent = (WindowImpl)parent;
-            _transientParent._disabledBy.Add(this);
-            _transientParent.UpdateEnabled();
+            _dialogParent = (WindowImpl)parent;
+            _dialogParent._disabledBy.Add(this);
+            _dialogParent.UpdateEnabled();
 
             SetOwnerHandle(((WindowImpl)parent)._hwnd);
             ShowWindow(_showWindowState);
@@ -742,12 +742,12 @@ namespace Avalonia.Win32
 
         private void HandleOwnershipOnClose()
         {
-            if (_transientParent != null)
+            if (_dialogParent != null)
             {
-                _transientParent._disabledBy.Remove(this);
-                _transientParent.UpdateEnabled();
+                _dialogParent._disabledBy.Remove(this);
+                _dialogParent.UpdateEnabled();
 
-                _transientParent = null;
+                _dialogParent = null;
             }
 
             _parent = null;
