@@ -1340,14 +1340,45 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     return _lastScaling;
 }
 
++(void)closeWindow:(NSWindow*)window
+{
+    for(NSWindow* childWindow in [window childWindows])
+    {
+        auto ch = objc_cast<AvnWindow>(childWindow);
+        
+        if(ch != nullptr)
+        {
+            if(!ch->_closed)
+            {
+                [ch performClose:nil];
+            }
+        }
+        else
+        {
+            [childWindow performClose:nil];
+        }
+    }
+    
+    auto ch = objc_cast<AvnWindow>(window);
+    
+    if(ch != nullptr)
+    {
+        if(!ch->_closed)
+        {
+            [ch performClose:nil];
+        }
+    }
+    else
+    {
+        [window performClose:nil];
+    }
+}
+
 +(void)closeAll
 {
-    NSArray<NSWindow*>* windows = [NSArray arrayWithArray:[NSApp windows]];
-    auto numWindows = [windows count];
-    
-    for(int i = 0; i < numWindows; i++)
+    for(NSWindow* window in [NSApp windows])
     {
-        [[windows objectAtIndex:i] performClose:nil];
+        [AvnWindow closeWindow: window];
     }
 }
 
