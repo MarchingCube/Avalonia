@@ -29,9 +29,11 @@ public:
     NSString* _lastTitle;
     IAvnMenu* _mainMenu;
     bool _shown;
+    bool _isChild;
     
     WindowBaseImpl(IAvnWindowBaseEvents* events, IAvnGlContext* gl)
     {
+        _isChild = false;
         _shown = false;
         _mainMenu = nullptr;
         BaseEvents = events;
@@ -478,6 +480,7 @@ private:
             if(cparent == nullptr)
                 return E_INVALIDARG;
             
+            _isChild = true;
             [Window setModal:FALSE];
             
             [cparent->Window addChildWindow:Window ordered:NSWindowAbove];
@@ -500,6 +503,7 @@ private:
             
             [Window setModal:TRUE];
             
+            _isChild = true;
             [cparent->Window addChildWindow:Window ordered:NSWindowAbove];
             WindowBaseImpl::Show();
             
@@ -856,18 +860,23 @@ protected:
     {
         unsigned long s = NSWindowStyleMaskBorderless;
 
+        if(!_isChild)
+        {
+            s |= NSWindowStyleMaskMiniaturizable;
+        }
+        
         switch (_decorations)
         {
             case SystemDecorationsNone:
-                s = s | NSWindowStyleMaskFullSizeContentView | NSWindowStyleMaskMiniaturizable;
+                s = s | NSWindowStyleMaskFullSizeContentView;
                 break;
 
             case SystemDecorationsBorderOnly:
-                s = s | NSWindowStyleMaskTitled | NSWindowStyleMaskFullSizeContentView | NSWindowStyleMaskMiniaturizable;
+                s = s | NSWindowStyleMaskTitled | NSWindowStyleMaskFullSizeContentView;
                 break;
 
             case SystemDecorationsFull:
-                s = s | NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskBorderless;
+                s = s | NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskBorderless;
                 
                 if(_canResize)
                 {
@@ -1497,15 +1506,6 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     
     if(window != nullptr)
     {
-        for(NSWindow* uch in [self childWindows])
-        {
-            auto ch = objc_cast<AvnWindow>(uch);
-            if(ch == nil)
-                continue;
-            
-            return false;
-        }
-        
         return !window->WindowEvents->Closing();
     }
     
@@ -1519,14 +1519,23 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 
 - (void)windowWillClose:(NSNotification *)notification
 {
-    _closed = true;
-    if(_parent)
+    if(!_closed)
     {
-        ComPtr<WindowBaseImpl> parent = _parent;
-        _parent = NULL;
-        [self restoreParentWindow];
-        parent->BaseEvents->Closed();
-        [parent->View onClosed];
+        _closed = true;
+        
+        for(NSWindow* uch in [self childWindows])
+        {
+            [uch close];
+        }
+        
+        if(_parent)
+        {
+            ComPtr<WindowBaseImpl> parent = _parent;
+            _parent = NULL;
+            [self restoreParentWindow];
+            parent->BaseEvents->Closed();
+            [parent->View onClosed];
+        }
     }
 }
 
