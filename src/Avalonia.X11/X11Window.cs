@@ -41,9 +41,9 @@ namespace Avalonia.X11
         private IntPtr _renderHandle;
         private bool _mapped;
         private bool _wasMappedAtLeastOnce = false;
-        private HashSet<X11Window> _transientChildren = new HashSet<X11Window>();
+        private HashSet<X11Window> _dialogChildren = new HashSet<X11Window>();
         private HashSet<X11Window> _children = new HashSet<X11Window>();
-        private X11Window _transientParent;
+        private X11Window _dialogParent;
         private X11Window _parent;
         private double? _scalingOverride;
         public object SyncRoot { get; } = new object();
@@ -460,7 +460,7 @@ namespace Avalonia.X11
                 {
                     if (ev.ClientMessageEvent.ptr1 == _x11.Atoms.WM_DELETE_WINDOW)
                     {
-                        if (CloseTransientChildrenRecursively(this, true))
+                        if (CloseDialogChildrenRecursively(this, true))
                         {
                             if (Closing?.Invoke() != true)
                             {
@@ -512,11 +512,11 @@ namespace Avalonia.X11
             }
         }
 
-        private bool CloseTransientChildrenRecursively(X11Window window, bool isRoot)
+        private bool CloseDialogChildrenRecursively(X11Window window, bool isRoot)
         {
-            foreach (var child in window._transientChildren.ToArray())
+            foreach (var child in window._dialogChildren.ToArray())
             {
-                if (!CloseTransientChildrenRecursively(child, false))
+                if (!CloseDialogChildrenRecursively(child, false))
                     return false;
             }
 
@@ -814,9 +814,9 @@ namespace Avalonia.X11
 
         bool ActivateTransientChildIfNeeded()
         {
-            if (_transientChildren.Count == 0)
+            if (_dialogChildren.Count == 0)
                 return false;
-            var child = _transientChildren.First();
+            var child = _dialogChildren.First();
             if (!child.ActivateTransientChildIfNeeded())
                 child.Activate();
             return true;
@@ -833,11 +833,11 @@ namespace Avalonia.X11
         
         void SetTransientParent(X11Window window, bool informServer = true)
         {
-            _transientParent?._transientChildren.Remove(this);
-            _transientParent = window;
-            _transientParent?._transientChildren.Add(this);
+            _dialogParent?._dialogChildren.Remove(this);
+            _dialogParent = window;
+            _dialogParent?._dialogChildren.Add(this);
             if (informServer)
-                SetTransientForHint(_transientParent?._handle);
+                SetTransientForHint(_dialogParent?._handle);
         }
 
         void SetTransientForHint(IntPtr? parent)
