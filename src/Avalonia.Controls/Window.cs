@@ -365,7 +365,7 @@ namespace Avalonia.Controls
             {
                 if (close)
                 {
-                    PlatformImpl?.Dispose();
+                    PlatformImpl?.Close();
                 }
             }
         }

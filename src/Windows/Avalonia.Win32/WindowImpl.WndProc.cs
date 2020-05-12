@@ -60,29 +60,7 @@ namespace Avalonia.Win32
 
                 case WindowsMessage.WM_CLOSE:
                 {
-                    bool canClose = true;
-
-                    foreach (var child in _disabledBy.ToArray())
-                    {
-                        if (child.Closing?.Invoke() != true)
-                        {
-                            child.Dispose();
-                        }
-                        else
-                        {
-                            canClose = false;
-                        }
-                    }
-
-                    if (!canClose)
-                    {
-                        return IntPtr.Zero;
-                    }
-                        
-
-                    bool? preventClosing = Closing?.Invoke();
-
-                    if (preventClosing == true)
+                    if (!TryClose())
                     {
                         return IntPtr.Zero;
                     }

@@ -16,6 +16,11 @@ namespace Avalonia.Platform
         void Hide();
 
         /// <summary>
+        /// Closes the window.
+        /// </summary>
+        void Close();
+
+        /// <summary>
         /// Gets the position of the window in device pixels.
         /// </summary>
         PixelPoint Position { get; }

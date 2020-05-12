@@ -348,6 +348,11 @@ namespace Avalonia.Win32
             UnmanagedMethods.ShowWindow(_hwnd, ShowWindowCommand.Hide);
         }
 
+        public void Close()
+        {
+            PostMessage(_hwnd, (uint)WindowsMessage.WM_CLOSE, IntPtr.Zero, IntPtr.Zero);
+        }
+
         public virtual void Show()
         {
             ShowWindow(_showWindowState);
@@ -871,6 +876,41 @@ namespace Avalonia.Win32
             return new Point(p.X, p.Y);
         }
 #endif
+
+        private bool TryClose()
+        {
+            if (!CloseDialogChildrenRecursively(this, true))
+            {
+                return false;
+            }
+
+            return Closing?.Invoke() != true;
+        }
+
+        private bool CloseDialogChildrenRecursively(WindowImpl window, bool isRoot)
+        {
+            foreach (var child in window._disabledBy.ToArray())
+            {
+                if (!CloseDialogChildrenRecursively(child, false))
+                {
+                    return false;
+                }
+            }
+
+            if (isRoot)
+            {
+                return true;
+            }
+
+            if (window.Closing?.Invoke() != true)
+            {
+                window.Dispose();
+
+                return true;
+            }
+
+            return false;
+        }
 
         PixelSize EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo.Size
         {

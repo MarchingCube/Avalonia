@@ -460,15 +460,7 @@ namespace Avalonia.X11
                 {
                     if (ev.ClientMessageEvent.ptr1 == _x11.Atoms.WM_DELETE_WINDOW)
                     {
-                        if (CloseDialogChildrenRecursively(this, true))
-                        {
-                            if (Closing?.Invoke() != true)
-                            {
-                                CloseChildrenRecursively(this, true);
-                                
-                                Dispose();
-                            }
-                        }
+                        Close();
                     }
                 }
             }
@@ -862,8 +854,20 @@ namespace Avalonia.X11
         }
 
         public void Hide() => XUnmapWindow(_x11.Display, _handle);
-        
-        
+
+        public void Close()
+        {
+            if (CloseDialogChildrenRecursively(this, true))
+            {
+                if (Closing?.Invoke() != true)
+                {
+                    CloseChildrenRecursively(this, true);
+
+                    Dispose();
+                }
+            }
+        }
+
         public Point PointToClient(PixelPoint point) => new Point((point.X - Position.X) / Scaling, (point.Y - Position.Y) / Scaling);
 
         public PixelPoint PointToScreen(Point point) => new PixelPoint(

@@ -75,6 +75,11 @@ namespace Avalonia.DesignerSupport.Remote
         {
         }
 
+        public void Close()
+        {
+            Dispose();
+        }
+
         public void BeginMoveDrag(PointerPressedEventArgs e)
         {
         }

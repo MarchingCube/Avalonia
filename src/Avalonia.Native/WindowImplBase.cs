@@ -284,6 +284,10 @@ namespace Avalonia.Native
             _native.Show();
         }
 
+        public void Close()
+        {
+            Dispose();
+        }
 
         public PixelPoint Position
         {
