@@ -74,7 +74,7 @@ namespace Avalonia.Controls.Primitives
         IStyleHost IStyleHost.StylingParent => Parent;
 
         /// <inheritdoc/>
-        public void Dispose() => PlatformImpl?.Dispose();
+        public void Dispose() => PlatformImpl?.Close();
 
         private void UpdatePosition()
         {
