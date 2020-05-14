@@ -121,9 +121,28 @@ namespace ControlCatalog.Pages
         private Window CreateSampleWindow()
         {
             var window = new Window();
+
+            var checkbox = new CheckBox
+            {
+                Content = "Prevent Close"
+            };
+
+            window.Closing += (sender, e) =>
+            {
+                e.Cancel = checkbox.IsChecked.Value;
+            };
+
             window.Height = 200;
             window.Width = 200;
-            window.Content = new TextBlock { Text = "Hello world!" };
+            window.Content = new StackPanel
+            {
+                Children =
+                {
+                    new TextBlock { Text = "Hello world!" },
+                    checkbox
+                }
+            };
+
             window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
 
             return window;
