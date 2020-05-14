@@ -1,6 +1,8 @@
 using System;
 using Avalonia.Collections;
+using Avalonia.Data;
 using Avalonia.Media;
+using Avalonia.Media.Immutable;
 
 namespace Avalonia.Controls.Shapes
 {
@@ -34,6 +36,7 @@ namespace Avalonia.Controls.Shapes
         private Geometry _definingGeometry;
         private Geometry _renderedGeometry;
         bool _calculateTransformOnArrange = false;
+        private Pen _pen;
 
         static Shape()
         {
@@ -141,9 +144,46 @@ namespace Avalonia.Controls.Shapes
 
             if (geometry != null)
             {
-                var pen = new Pen(Stroke, StrokeThickness, new DashStyle(StrokeDashArray, StrokeDashOffset),
-                     StrokeLineCap, StrokeJoin);
-                context.DrawGeometry(Fill, pen, geometry);
+                EnsurePenCreated();
+
+                context.DrawGeometry(Fill, _pen, geometry);
+            }
+        }
+
+        protected override void OnPropertyChanged<T>(AvaloniaProperty<T> property, Optional<T> oldValue, BindingValue<T> newValue,
+            BindingPriority priority)
+        {
+            base.OnPropertyChanged(property, oldValue, newValue, priority);
+
+            if (property == StrokeProperty)
+            {
+                EnsurePenCreated();
+
+                _pen.Brush = newValue.GetValueOrDefault<IBrush>();
+            } 
+            else if (property == StrokeThicknessProperty)
+            {
+                EnsurePenCreated();
+
+                _pen.Thickness = newValue.GetValueOrDefault<double>();
+            } 
+            else if (property == StrokeDashArrayProperty || property == StrokeDashOffsetProperty)
+            {
+                EnsurePenCreated();
+
+                _pen.DashStyle = new DashStyle(StrokeDashArray, StrokeDashOffset);
+            } 
+            else if (property == StrokeLineCapProperty)
+            {
+                EnsurePenCreated();
+
+                _pen.LineCap = newValue.GetValueOrDefault<PenLineCap>();
+            } 
+            else if (property == StrokeLineCapProperty)
+            {
+                EnsurePenCreated();
+
+                _pen.LineJoin = newValue.GetValueOrDefault<PenLineJoin>();
             }
         }
 
@@ -218,6 +258,23 @@ namespace Avalonia.Controls.Shapes
             }
 
             return finalSize;
+        }
+
+        private void EnsurePenCreated()
+        {
+            if (_pen != null)
+            {
+                return;
+            }
+
+            _pen = new Pen
+            {
+                Brush = Stroke,
+                Thickness = StrokeThickness,
+                DashStyle = new DashStyle(StrokeDashArray, StrokeDashOffset),
+                LineCap = StrokeLineCap,
+                LineJoin = StrokeJoin
+            };
         }
 
         private Size CalculateShapeSizeAndSetTransform(Size availableSize)

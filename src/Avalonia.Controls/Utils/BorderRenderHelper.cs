@@ -1,5 +1,6 @@
 ﻿using System;
 using Avalonia.Media;
+using Avalonia.Media.Immutable;
 using Avalonia.Platform;
 
 namespace Avalonia.Controls.Utils
@@ -115,7 +116,7 @@ namespace Avalonia.Controls.Utils
 
                 if (borderThickness > 0)
                 {
-                    pen = new Pen(borderBrush, borderThickness);
+                    pen = new ImmutablePen(borderBrush?.ToImmutable(), borderThickness);
                 }
 
                 var rrect = new RoundedRect(new Rect(_size), _cornerRadius.TopLeft, _cornerRadius.TopRight,
