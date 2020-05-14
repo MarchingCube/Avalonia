@@ -45,7 +45,7 @@ namespace Avalonia.Win32
 #endif
 
         private const WindowStyles WindowStateMask = (WindowStyles.WS_MAXIMIZE | WindowStyles.WS_MINIMIZE);
-        private readonly List<WindowImpl> _disabledBy;
+        private readonly List<WindowImpl> _childWindows;
         private readonly TouchDevice _touchDevice;
         private readonly MouseDevice _mouseDevice;
         private readonly ManagedDeferredRendererLock _rendererLock;
@@ -71,7 +71,7 @@ namespace Avalonia.Win32
 
         public WindowImpl()
         {
-            _disabledBy = new List<WindowImpl>();
+            _childWindows = new List<WindowImpl>();
             _touchDevice = new TouchDevice();
             _mouseDevice = new WindowsMouseDevice();
 
@@ -365,6 +365,7 @@ namespace Avalonia.Win32
             CheckForOwnershipCycle(parentImpl);
 
             _parent = parentImpl;
+            parentImpl._childWindows.Add(this);
 
             SetOwnerHandle(_parent._hwnd);
             ShowWindow(_showWindowState);
@@ -377,7 +378,7 @@ namespace Avalonia.Win32
             CheckForOwnershipCycle(parentImpl);
 
             _dialogParent = (WindowImpl)parent;
-            _dialogParent._disabledBy.Add(this);
+            _dialogParent._childWindows.Add(this);
             _dialogParent.UpdateEnabled();
 
             SetOwnerHandle(((WindowImpl)parent)._hwnd);
@@ -742,14 +743,14 @@ namespace Avalonia.Win32
 
         private void UpdateEnabled()
         {
-            EnableWindow(_hwnd, _disabledBy.Count == 0);
+            EnableWindow(_hwnd, _childWindows.Count == 0);
         }
 
         private void HandleOwnershipOnClose()
         {
             if (_dialogParent != null)
             {
-                _dialogParent._disabledBy.Remove(this);
+                _dialogParent._childWindows.Remove(this);
                 _dialogParent.UpdateEnabled();
 
                 _dialogParent = null;
@@ -889,20 +890,21 @@ namespace Avalonia.Win32
 
         private bool CloseDialogChildrenRecursively(WindowImpl window, bool isRoot)
         {
-            foreach (var child in window._disabledBy.ToArray())
+            bool canClose = true;
+            foreach (var child in window._childWindows.ToArray())
             {
-                if (!CloseDialogChildrenRecursively(child, false))
+                if(!CloseDialogChildrenRecursively(child, false))
                 {
-                    return false;
+                    canClose = false;
                 }
             }
 
             if (isRoot)
             {
-                return true;
+                return canClose;
             }
 
-            if (window.Closing?.Invoke() != true)
+            if (canClose && window.Closing?.Invoke() != true)
             {
                 window.Dispose();
 
