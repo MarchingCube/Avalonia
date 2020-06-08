@@ -9,7 +9,8 @@ namespace Avalonia.Animation.Animators
     /// </summary>
     public class TransformAnimator : Animator<double>
     {
-        DoubleAnimator _doubleAnimator;
+        private DoubleAnimator _doubleAnimator;
+        private TransformOperationsAnimator _compositeOperationsAnimator;
 
         /// <inheritdoc/>
         public override IDisposable Apply(Animation animation, Animatable control, IClock clock, IObservable<bool> obsMatch, Action onComplete)
@@ -51,7 +52,7 @@ namespace Avalonia.Animation.Animators
                 // It's a transform object so let's target that.
                 if (renderTransformType == Property.OwnerType)
                 {
-                    return _doubleAnimator.Apply(animation, ctrl.RenderTransform, clock ?? control.Clock, obsMatch, onComplete);
+                    return _doubleAnimator.Apply(animation, (Transform) ctrl.RenderTransform, clock ?? control.Clock, obsMatch, onComplete);
                 }
                 // It's a TransformGroup and try finding the target there.
                 else if (renderTransformType == typeof(TransformGroup))
@@ -72,6 +73,24 @@ namespace Avalonia.Animation.Animators
             }
             else
             {
+                if (typeof(ITransform).IsAssignableFrom(Property.PropertyType))
+                {
+                    if (_compositeOperationsAnimator == null)
+                    {
+                        _compositeOperationsAnimator = new TransformOperationsAnimator
+                        {
+                            Property = Property
+                        };
+
+                        foreach (AnimatorKeyFrame keyframe in this)
+                        {
+                            _compositeOperationsAnimator.Add(keyframe);
+                        }
+                    }
+
+                    return _compositeOperationsAnimator.Apply(animation, control, clock ?? control.Clock, obsMatch, onComplete);
+                }
+
                 Logger.TryGet(LogEventLevel.Error)?.Log(
                     LogArea.Animations,
                     control,

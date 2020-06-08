@@ -13,7 +13,7 @@
         <TreeView Items="{Binding Items}" Selection="{Binding Selection}" SelectionMode="{Binding SelectionMode}" Width="250" Height="350">
           <TreeView.ItemTemplate>
             <TreeDataTemplate ItemsSource="{Binding Children}">
-              <TextBlock Text="{Binding Header}"/>
+              <TextBox Text="{Binding Header}"/>
             </TreeDataTemplate>
           </TreeView.ItemTemplate>
         </TreeView>

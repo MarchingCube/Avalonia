@@ -170,8 +170,6 @@ namespace Avalonia.Controls.Primitives
             _pageUpButton = e.NameScope.Find<Button>("PART_PageUpButton");
             _pageDownButton = e.NameScope.Find<Button>("PART_PageDownButton");
 
-
-
             if (_lineUpButton != null)
             {
                 _lineUpButton.Click += LineUpClick;
