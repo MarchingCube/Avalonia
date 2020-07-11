@@ -20,6 +20,7 @@ namespace Avalonia
         private static int s_nextId;
         private readonly Subject<AvaloniaPropertyChangedEventArgs> _changed;
         private readonly PropertyMetadata _defaultMetadata;
+        private readonly PropertyMetadata _actualMetadata;
         private readonly Dictionary<Type, PropertyMetadata> _metadata;
         private readonly Dictionary<Type, PropertyMetadata> _metadataCache = new Dictionary<Type, PropertyMetadata>();
 
@@ -61,6 +62,7 @@ namespace Avalonia
 
             _metadata.Add(ownerType, metadata);
             _defaultMetadata = metadata;
+            _actualMetadata = metadata;
         }
 
         /// <summary>
@@ -86,6 +88,7 @@ namespace Avalonia
             Notifying = source.Notifying;
             Id = source.Id;
             _defaultMetadata = source._defaultMetadata;
+            _actualMetadata = metadata;
 
             // Properties that have different owner can't use fast path for metadata.
             _hasMetadataOverrides = true;
@@ -441,6 +444,11 @@ namespace Avalonia
             if (!_hasMetadataOverrides)
             {
                 return _defaultMetadata;
+            }
+
+            if (type == OwnerType)
+            {
+                return _actualMetadata;
             }
 
             return GetMetadataWithOverrides(type);
