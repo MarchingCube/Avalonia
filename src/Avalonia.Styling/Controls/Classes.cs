@@ -12,6 +12,8 @@ namespace Avalonia.Controls
     /// </remarks>
     public class Classes : AvaloniaList<string>, IPseudoClasses
     {
+        private static readonly char[] s_separators = new char[] { ' ' };
+
         /// <summary>
         /// Initializes a new instance of the <see cref="Classes"/> class.
         /// </summary>
@@ -42,7 +44,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="s">The string.</param>
         /// <returns>The <see cref="Classes"/>.</returns>
-        public static Classes Parse(string s) => new Classes(s.Split(' '));
+        public static Classes Parse(string s) => new Classes(s.Split(s_separators));
 
         /// <summary>
         /// Adds a style class to the collection.
