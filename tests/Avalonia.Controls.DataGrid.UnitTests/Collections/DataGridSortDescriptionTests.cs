@@ -4,9 +4,8 @@ using System.Linq;
 using Avalonia.Collections;
 using Xunit;
 
-namespace Avalonia.Controls.DataGrid.UnitTests.Collections
+namespace Avalonia.Controls.UnitTests.Collections
 {
-
     public class DataGridSortDescriptionTests
     {
         [Fact]
