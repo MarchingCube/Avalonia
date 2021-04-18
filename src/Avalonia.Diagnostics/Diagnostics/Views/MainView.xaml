@@ -16,6 +16,9 @@
           </MenuItem.Icon>
         </MenuItem>
       </MenuItem>
+      <MenuItem Header="_Tools">
+        <MenuItem Header="Save Visual diagnostics" Command="{Binding SaveVisualDiagnostics}" IsEnabled="{Binding HasRenderDebugInterface}" />
+      </MenuItem>
       <MenuItem Header="_Options">
         <MenuItem Header="Visualize margin/padding" Command="{Binding ToggleVisualizeMarginPadding}">
           <MenuItem.Icon>

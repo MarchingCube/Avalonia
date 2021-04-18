@@ -11,6 +11,7 @@ using Avalonia.OpenGL;
 using Avalonia.OpenGL.Imaging;
 using Avalonia.Platform;
 using Avalonia.Visuals.Media.Imaging;
+using Avalonia.VisualTree;
 using SkiaSharp;
 
 namespace Avalonia.Skia
@@ -18,7 +19,7 @@ namespace Avalonia.Skia
     /// <summary>
     /// Skia platform render interface.
     /// </summary>
-    internal class PlatformRenderInterface : IPlatformRenderInterface, IOpenGlAwarePlatformRenderInterface
+    internal class PlatformRenderInterface : IPlatformRenderInterface, IOpenGlAwarePlatformRenderInterface, IPlatformRenderDebugInterface
     {
         private readonly ISkiaGpu _skiaGpu;
 
@@ -268,6 +269,23 @@ namespace Avalonia.Skia
                 throw new PlatformNotSupportedException("GPU acceleration is not available");
             throw new PlatformNotSupportedException(
                 "Current GPU acceleration backend does not support OpenGL integration");
+        }
+
+        public RenderDiagnostics? CreateRenderDiagnostics(IVisual visual)
+        {
+            using var rt = new DebugPictureRenderTarget(
+                new PixelSize((int)visual.Bounds.Size.Width, (int)visual.Bounds.Height),
+                Matrix.CreateTranslation(-visual.Bounds.Position));
+
+            rt.Render(visual);
+
+            var stream = new MemoryStream();
+
+            rt.Picture.Serialize(stream);
+
+            stream.Seek(0, SeekOrigin.Begin);
+
+            return new RenderDiagnostics(stream, ".skp");
         }
 
         public bool SupportsIndividualRoundRects => true;

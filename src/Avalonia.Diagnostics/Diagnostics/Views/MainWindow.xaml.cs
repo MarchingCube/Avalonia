@@ -43,7 +43,7 @@ namespace Avalonia.Diagnostics.Views
                     if (_root != null)
                     {
                         _root.Closed += RootClosed;
-                        DataContext = new MainViewModel(value);
+                        DataContext = new MainViewModel(value, this);
                     }
                     else
                     {

@@ -1,8 +1,11 @@
 ﻿using System;
 using System.ComponentModel;
+using System.IO;
+using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Diagnostics.Models;
 using Avalonia.Input;
+using Avalonia.Platform;
 using Avalonia.Threading;
 
 namespace Avalonia.Diagnostics.ViewModels
@@ -10,6 +13,7 @@ namespace Avalonia.Diagnostics.ViewModels
     internal class MainViewModel : ViewModelBase, IDisposable
     {
         private readonly TopLevel _root;
+        private readonly Window _ownerWindow;
         private readonly TreePageViewModel _logicalTree;
         private readonly TreePageViewModel _visualTree;
         private readonly EventsPageViewModel _events;
@@ -22,9 +26,10 @@ namespace Avalonia.Diagnostics.ViewModels
         private bool _shouldVisualizeDirtyRects;
         private bool _showFpsOverlay;
 
-        public MainViewModel(TopLevel root)
+        public MainViewModel(TopLevel root, Window ownerWindow)
         {
             _root = root;
+            _ownerWindow = ownerWindow;
             _logicalTree = new TreePageViewModel(this, LogicalTreeNode.Create(root));
             _visualTree = new TreePageViewModel(this, VisualTreeNode.Create(root));
             _events = new EventsPageViewModel(root);
@@ -35,6 +40,8 @@ namespace Avalonia.Diagnostics.ViewModels
             _pointerOverSubscription = root.GetObservable(TopLevel.PointerOverElementProperty)
                 .Subscribe(x => PointerOverElement = x?.GetType().Name);
             Console = new ConsoleViewModel(UpdateConsoleContext);
+
+            HasRenderDebugInterface = AvaloniaLocator.Current.GetService<IPlatformRenderDebugInterface>() != null;
         }
 
         public bool ShouldVisualizeMarginPadding
@@ -62,6 +69,48 @@ namespace Avalonia.Diagnostics.ViewModels
         {
             ShouldVisualizeMarginPadding = !ShouldVisualizeMarginPadding;
         }
+
+        public async Task SaveVisualDiagnostics()
+        {
+            if (Content is TreePageViewModel treeVm && treeVm.SelectedNode != null)
+            {
+                var visual = treeVm.SelectedNode.Visual;
+
+                var debugInterface = AvaloniaLocator.Current.GetService<IPlatformRenderDebugInterface>();
+
+                if (debugInterface is null)
+                {
+                    return;
+                }
+
+                var diagnostics = debugInterface.CreateRenderDiagnostics(visual);
+
+                if (diagnostics != null)
+                {
+                    using var stream = diagnostics.Value.DiagnosticsStream;
+
+                    var rootName = _root is Window window ? window.Title : "Root";
+                    var time = DateTime.Now;
+
+                    var dialog = new SaveFileDialog
+                    {
+                        DefaultExtension = diagnostics.Value.FileExtension,
+                        InitialFileName = $"render-{rootName}-{time.ToFileTime()}{diagnostics.Value.FileExtension}"
+                    };
+
+                    var path = await dialog.ShowAsync(_ownerWindow);
+
+                    if (!string.IsNullOrEmpty(path))
+                    {
+                        using var fs = File.Create(path);
+
+                        stream.CopyTo(fs);
+                    }
+                }
+            }
+        }
+
+        public bool HasRenderDebugInterface { get; }
 
         public bool ShowFpsOverlay
         {

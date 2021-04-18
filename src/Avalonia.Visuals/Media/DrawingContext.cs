@@ -41,12 +41,14 @@ namespace Avalonia.Media
         {
             PlatformImpl = impl;
             _ownsImpl = true;
+            _currentTransform = PlatformImpl.Transform;
         }
         
         public DrawingContext(IDrawingContextImpl impl, bool ownsImpl)
         {
             _ownsImpl = ownsImpl;
             PlatformImpl = impl;
+            _currentTransform = PlatformImpl.Transform;
         }
 
         public IDrawingContextImpl PlatformImpl { get; }
